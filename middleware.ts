@@ -2,8 +2,13 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Protéger la route /admin
+  // Protéger la route /admin (SAUF /admin/login)
   if (request.nextUrl.pathname.startsWith('/admin')) {
+    // Autoriser l'accès à la page de login sans authentification
+    if (request.nextUrl.pathname === '/admin/login') {
+      return NextResponse.next()
+    }
+
     const authToken = request.cookies.get('admin-auth-token')?.value
 
     if (!authToken) {
