@@ -425,7 +425,7 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
       ctx.stroke()
 
       // 4. FINALISATION ET UPLOAD
-      const dataUrl = canvas.toDataURL('image/png', 0.90)
+      const dataUrl = canvas.toDataURL('image/png', 0.60)
 
       // Si on est en mode débogage, on retourne juste l'image et on arrête
       if (debugMode) {

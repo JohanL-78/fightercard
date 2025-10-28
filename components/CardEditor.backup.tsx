@@ -333,7 +333,7 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
       ctx.stroke()
 
       // 4. FINALISATION ET UPLOAD
-      const dataUrl = canvas.toDataURL('image/png', 0.90)
+      const dataUrl = canvas.toDataURL('image/png', 0.60)
       const uploadResponse = await fetch('/api/upload-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl }) })
       if (!uploadResponse.ok) throw new Error('Erreur upload Cloudinary')
       const { url: cloudinaryUrl } = await uploadResponse.json()
