@@ -425,7 +425,7 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
       ctx.stroke()
 
       // 4. FINALISATION ET UPLOAD
-      const dataUrl = canvas.toDataURL('image/png', 0.60)
+      const dataUrl = canvas.toDataURL('image/png', 0.95) // Qualité augmentée pour HD
 
       // Si on est en mode débogage, on retourne juste l'image et on arrête
       if (debugMode) {
@@ -433,10 +433,37 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
         return dataUrl
       }
 
-      // Sinon, on continue le processus normal d'upload
-      const uploadResponse = await fetch('/api/upload-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl }) })
-      if (!uploadResponse.ok) throw new Error('Erreur upload Cloudinary')
-      const { url: cloudinaryUrl } = await uploadResponse.json()
+      // Sinon, on continue le processus normal d'upload DIRECT vers Cloudinary
+      // Conversion du data URL en Blob pour l'upload
+      const blob = await fetch(dataUrl).then(res => res.blob())
+
+      const formData = new FormData()
+      formData.append('file', blob)
+      formData.append('upload_preset', 'fight-cards-unsigned')
+
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+      const uploadResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: 'POST', body: formData }
+      )
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        console.error('Erreur upload Cloudinary:', errorData)
+        throw new Error('Erreur upload Cloudinary')
+      }
+
+      const uploadData = await uploadResponse.json()
+      const cloudinaryUrl = uploadData.secure_url
+
+      console.log('Image HD uploadée sur Cloudinary:', {
+        url: cloudinaryUrl,
+        width: uploadData.width,
+        height: uploadData.height,
+        format: uploadData.format,
+        size: `${(uploadData.bytes / 1024 / 1024).toFixed(2)} MB`,
+      })
+
       if (onSave) onSave(cloudinaryUrl, { ...customization, photo: cloudinaryUrl })
       else alert('Veuillez finaliser votre commande')
 
