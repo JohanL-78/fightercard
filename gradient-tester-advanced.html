@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backgrounds Avancés - Fight Card Templates</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0a0a0a;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: white;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #fff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .card h3 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #fff;
+    }
+
+    .card p {
+      margin: 0 0 15px 0;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .preview {
+      width: 360px;
+      height: 520px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px;
+      z-index: 10;
+    }
+
+    .top-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+
+    .rating {
+      font-size: 48px;
+      font-weight: bold;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .fighter-name {
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
+      letter-spacing: 2px;
+    }
+
+    .stats {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .code {
+      margin-top: 10px;
+      background: #0d1117;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      color: #58a6ff;
+      overflow-x: auto;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .info-box {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border-left: 4px solid #4CAF50;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .badge-css { background: #2196F3; color: white; }
+    .badge-image { background: #FF9800; color: white; }
+    .badge-weight { background: #4CAF50; color: white; }
+
+    /* ===== BACKGROUNDS ULTRA-AVANCÉS CSS ===== */
+
+    /* UFC - Octogone avec éclairage dramatique */
+    .ufc-octagon {
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(139, 0, 0, 0.4) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 100%, rgba(139, 0, 0, 0.3) 0%, transparent 50%),
+        linear-gradient(135deg, #1a0000 0%, #000000 50%, #1a0000 100%);
+      position: relative;
+    }
+
+    .ufc-octagon::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(0deg, transparent 24%, rgba(139, 0, 0, 0.05) 25%, rgba(139, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(139, 0, 0, 0.05) 75%, rgba(139, 0, 0, 0.05) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(139, 0, 0, 0.05) 25%, rgba(139, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(139, 0, 0, 0.05) 75%, rgba(139, 0, 0, 0.05) 76%, transparent 77%, transparent);
+      background-size: 80px 80px;
+    }
+
+    .ufc-octagon::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.7) 100%);
+    }
+
+    /* UFC - Spotlight dramatique */
+    .ufc-spotlight {
+      background: #000000;
+      position: relative;
+    }
+
+    .ufc-spotlight::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 500px 800px at 50% -20%, rgba(255, 0, 0, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse 400px 600px at 20% 50%, rgba(139, 0, 0, 0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 400px 600px at 80% 50%, rgba(139, 0, 0, 0.2) 0%, transparent 60%);
+    }
+
+    .ufc-spotlight::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.1) 2px, rgba(0, 0, 0, 0.1) 4px);
+      opacity: 0.5;
+    }
+
+    /* Boxing - Ring 3D avec cordes */
+    .boxing-ring {
+      background:
+        linear-gradient(180deg, #000814 0%, #001d3d 50%, #000814 100%);
+      position: relative;
+    }
+
+    .boxing-ring::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(0deg, transparent 0%, transparent calc(33.33% - 2px), rgba(200, 200, 200, 0.3) calc(33.33% - 2px), rgba(200, 200, 200, 0.3) calc(33.33% + 2px), transparent calc(33.33% + 2px)),
+        linear-gradient(0deg, transparent 0%, transparent calc(50% - 2px), rgba(200, 200, 200, 0.4) calc(50% - 2px), rgba(200, 200, 200, 0.4) calc(50% + 2px), transparent calc(50% + 2px)),
+        linear-gradient(0deg, transparent 0%, transparent calc(66.66% - 2px), rgba(200, 200, 200, 0.3) calc(66.66% - 2px), rgba(200, 200, 200, 0.3) calc(66.66% + 2px), transparent calc(66.66% + 2px));
+    }
+
+    .boxing-ring::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 100%, rgba(0, 0, 0, 0.5) 0%, transparent 50%);
+    }
+
+    /* Boxing - Canvas classique */
+    .boxing-canvas {
+      background: #0a0a0a;
+      position: relative;
+    }
+
+    .boxing-canvas::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(45deg, #111 25%, transparent 25%),
+        linear-gradient(-45deg, #111 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #111 75%),
+        linear-gradient(-45deg, transparent 75%, #111 75%);
+      background-size: 40px 40px;
+      background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+      opacity: 0.15;
+    }
+
+    .boxing-canvas::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(0, 30, 60, 0.3) 50%, transparent 100%);
+    }
+
+    /* Space - Galaxie animée */
+    .space-galaxy {
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(75, 0, 130, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(138, 43, 226, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+      position: relative;
+      animation: galaxyPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes galaxyPulse {
+      0%, 100% { filter: brightness(1) hue-rotate(0deg); }
+      50% { filter: brightness(1.1) hue-rotate(10deg); }
+    }
+
+    .space-galaxy::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, white, transparent),
+        radial-gradient(2px 2px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(1px 1px at 80% 10%, white, transparent),
+        radial-gradient(2px 2px at 90% 60%, white, transparent),
+        radial-gradient(1px 1px at 33% 80%, white, transparent),
+        radial-gradient(1px 1px at 15% 90%, white, transparent),
+        radial-gradient(1px 1px at 70% 20%, rgba(138, 43, 226, 0.8), transparent),
+        radial-gradient(1px 1px at 40% 40%, rgba(75, 0, 130, 0.8), transparent);
+      background-size: 200% 200%;
+      background-position: 0% 0%, 40% 60%, 130% 270%, 70% 100%, 20% 0%, 50% 50%, 80% 20%, 60% 80%, 30% 50%;
+      animation: starsFloat 20s linear infinite;
+    }
+
+    @keyframes starsFloat {
+      0% { background-position: 0% 0%, 40% 60%, 130% 270%, 70% 100%, 20% 0%, 50% 50%, 80% 20%, 60% 80%, 30% 50%; }
+      100% { background-position: 10% 10%, 50% 70%, 140% 280%, 80% 110%, 30% 10%, 60% 60%, 90% 30%, 70% 90%, 40% 60%; }
+    }
+
+    /* Space - Nébuleuse colorée */
+    .space-nebula-advanced {
+      background:
+        radial-gradient(ellipse at 30% 40%, rgba(138, 43, 226, 0.4) 0%, transparent 40%),
+        radial-gradient(ellipse at 70% 60%, rgba(25, 25, 112, 0.4) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 80%, rgba(72, 61, 139, 0.3) 0%, transparent 50%),
+        linear-gradient(180deg, #0a0a1e 0%, #000000 100%);
+      position: relative;
+    }
+
+    .space-nebula-advanced::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 25% 25%, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 75% 75%, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(2px 2px at 45% 55%, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 65% 35%, rgba(138, 43, 226, 0.9), transparent),
+        radial-gradient(1px 1px at 35% 65%, rgba(75, 0, 130, 0.9), transparent);
+      background-size: 300% 300%;
+      background-position: 0% 0%;
+      animation: nebulaShift 15s ease-in-out infinite;
+    }
+
+    @keyframes nebulaShift {
+      0%, 100% { background-position: 0% 0%; opacity: 0.7; }
+      50% { background-position: 100% 100%; opacity: 1; }
+    }
+
+    /* Electric Neon */
+    .electric-neon {
+      background:
+        radial-gradient(ellipse at top left, rgba(0, 255, 255, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(255, 0, 255, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #000000 0%, #0a0a1e 100%);
+      position: relative;
+    }
+
+    .electric-neon::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.1) 50%, transparent 100%),
+        linear-gradient(0deg, transparent 0%, rgba(255, 0, 255, 0.1) 50%, transparent 100%);
+      background-size: 200% 200%;
+      animation: electricPulse 4s linear infinite;
+    }
+
+    @keyframes electricPulse {
+      0% { background-position: -100% -100%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    /* Matrix Digital */
+    .matrix-digital {
+      background:
+        linear-gradient(180deg, #000000 0%, #001a00 50%, #000000 100%);
+      position: relative;
+    }
+
+    .matrix-digital::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, rgba(0, 255, 0, 0.03) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, rgba(0, 255, 0, 0.03) 4px);
+      background-size: 100% 100%;
+    }
+
+    .matrix-digital::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(0, 255, 0, 0.2) 0%, transparent 50%);
+    }
+
+    /* Fire Arena */
+    .fire-arena {
+      background:
+        radial-gradient(ellipse at 50% 100%, rgba(255, 69, 0, 0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 20% 50%, rgba(139, 0, 0, 0.3) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 50%, rgba(139, 0, 0, 0.3) 0%, transparent 40%),
+        linear-gradient(180deg, #1a0000 0%, #000000 100%);
+      position: relative;
+    }
+
+    .fire-arena::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255, 69, 0, 0.05) 40px, rgba(255, 69, 0, 0.05) 42px);
+      animation: fireFlicker 2s ease-in-out infinite;
+    }
+
+    @keyframes fireFlicker {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.8; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Backgrounds Ultra-Avancés - Fight Card</h1>
+
+    <div class="info-box">
+      <h2>✨ Nouveautés</h2>
+      <p>• <strong>Backgrounds CSS avancés</strong> avec gradients multiples, patterns SVG et animations</p>
+      <p>• <strong>Poids: 0 KB</strong> - Tout est généré en CSS pur</p>
+      <p>• <strong>Qualité HD infinie</strong> - Vectoriel, donc parfait à toute résolution</p>
+      <p>• <strong>Performances optimales</strong> - Pas de chargement d'images</p>
+    </div>
+
+    <h2 style="margin: 40px 0 20px 0;">🔴 UFC - Style Agressif Avancé</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>UFC Octagon <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Octogone avec éclairage dramatique et grille</p>
+        <div class="preview ufc-octagon">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">/* Base: gradients multiples rouge/noir */
+background:
+  radial-gradient(ellipse at 50% 0%, rgba(139, 0, 0, 0.4) 0%, transparent 60%),
+  radial-gradient(ellipse at 50% 100%, rgba(139, 0, 0, 0.3) 0%, transparent 50%),
+  linear-gradient(135deg, #1a0000 0%, #000000 50%, #1a0000 100%);
+
+/* ::before: Grille octogonale */
+background-image:
+  linear-gradient(0deg, transparent 24%, rgba(139, 0, 0, 0.05) 25%, ...),
+  linear-gradient(90deg, transparent 24%, rgba(139, 0, 0, 0.05) 25%, ...);
+background-size: 80px 80px;
+
+/* ::after: Vignette */
+background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.7) 100%);</div>
+      </div>
+
+      <div class="card">
+        <h3>UFC Spotlight <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Projecteurs dramatiques avec scan lines</p>
+        <div class="preview ufc-spotlight">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">/* Base: noir pur */
+background: #000000;
+
+/* ::before: 3 spotlights rouges */
+background:
+  radial-gradient(ellipse 500px 800px at 50% -20%, rgba(255, 0, 0, 0.3) 0%, transparent 50%),
+  radial-gradient(ellipse 400px 600px at 20% 50%, rgba(139, 0, 0, 0.2) 0%, transparent 60%),
+  radial-gradient(ellipse 400px 600px at 80% 50%, rgba(139, 0, 0, 0.2) 0%, transparent 60%);
+
+/* ::after: Scan lines effet TV */
+background-image:
+  repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.1) 2px, ...);</div>
+      </div>
+
+      <div class="card">
+        <h3>Fire Arena <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Arène de feu avec animation flicker</p>
+        <div class="preview fire-arena">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">/* Base: gradients orange/rouge */
+background:
+  radial-gradient(ellipse at 50% 100%, rgba(255, 69, 0, 0.4) 0%, transparent 50%),
+  radial-gradient(ellipse at 20% 50%, rgba(139, 0, 0, 0.3) 0%, transparent 40%),
+  linear-gradient(180deg, #1a0000 0%, #000000 100%);
+
+/* ::before: Lignes verticales + animation */
+background-image: repeating-linear-gradient(90deg, transparent, transparent 40px, ...);
+animation: fireFlicker 2s ease-in-out infinite;</div>
+      </div>
+    </div>
+
+    <h2 style="margin: 40px 0 20px 0;">🥊 Boxing - Style Technique Avancé</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Boxing Ring 3D <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Ring avec cordes horizontales et éclairage</p>
+        <div class="preview boxing-ring">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">/* Base: gradient bleu vertical */
+background: linear-gradient(180deg, #000814 0%, #001d3d 50%, #000814 100%);
+
+/* ::before: 3 cordes horizontales */
+background-image:
+  linear-gradient(0deg, transparent 0%, transparent calc(33.33% - 2px),
+    rgba(200, 200, 200, 0.3) calc(33.33% - 2px), ...),
+  /* Corde du milieu plus visible */
+  linear-gradient(0deg, transparent 0%, transparent calc(50% - 2px),
+    rgba(200, 200, 200, 0.4) calc(50% - 2px), ...),
+  /* Corde du bas */
+  linear-gradient(0deg, transparent 0%, transparent calc(66.66% - 2px), ...);
+
+/* ::after: Éclairage haut/bas */
+background:
+  radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+  radial-gradient(ellipse at 50% 100%, rgba(0, 0, 0, 0.5) 0%, transparent 50%);</div>
+      </div>
+
+      <div class="card">
+        <h3>Boxing Canvas <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Texture de canvas avec pattern diagonal</p>
+        <div class="preview boxing-canvas">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">/* Base: noir */
+background: #0a0a0a;
+
+/* ::before: Pattern diamant texture canvas */
+background-image:
+  linear-gradient(45deg, #111 25%, transparent 25%),
+  linear-gradient(-45deg, #111 25%, transparent 25%),
+  linear-gradient(45deg, transparent 75%, #111 75%),
+  linear-gradient(-45deg, transparent 75%, #111 75%);
+background-size: 40px 40px;
+background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+opacity: 0.15;
+
+/* ::after: Overlay bleu subtil */
+background: linear-gradient(180deg, transparent 0%, rgba(0, 30, 60, 0.3) 50%, transparent 100%);</div>
+      </div>
+    </div>
+
+    <h2 style="margin: 40px 0 20px 0;">🌌 Space - Style Cosmique Avancé</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Space Galaxy (Animé) <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Galaxie animée avec étoiles et nébuleuse violette</p>
+        <div class="preview space-galaxy">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">/* Base: gradients violets + animation pulse */
+background:
+  radial-gradient(ellipse at 20% 30%, rgba(75, 0, 130, 0.3) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 70%, rgba(138, 43, 226, 0.2) 0%, transparent 50%),
+  radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+animation: galaxyPulse 8s ease-in-out infinite;
+
+@keyframes galaxyPulse {
+  0%, 100% { filter: brightness(1) hue-rotate(0deg); }
+  50% { filter: brightness(1.1) hue-rotate(10deg); }
+}
+
+/* ::before: 9 étoiles + étoiles violettes + animation float */
+background-image:
+  radial-gradient(2px 2px at 20% 30%, white, transparent),
+  /* ... 6 autres étoiles blanches ... */
+  radial-gradient(1px 1px at 70% 20%, rgba(138, 43, 226, 0.8), transparent),
+  radial-gradient(1px 1px at 40% 40%, rgba(75, 0, 130, 0.8), transparent);
+background-size: 200% 200%;
+animation: starsFloat 20s linear infinite;</div>
+      </div>
+
+      <div class="card">
+        <h3>Space Nebula (Animé) <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Nébuleuse colorée avec étoiles animées</p>
+        <div class="preview space-nebula-advanced">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">/* Base: 3 nébuleuses violettes superposées */
+background:
+  radial-gradient(ellipse at 30% 40%, rgba(138, 43, 226, 0.4) 0%, transparent 40%),
+  radial-gradient(ellipse at 70% 60%, rgba(25, 25, 112, 0.4) 0%, transparent 40%),
+  radial-gradient(ellipse at 50% 80%, rgba(72, 61, 139, 0.3) 0%, transparent 50%),
+  linear-gradient(180deg, #0a0a1e 0%, #000000 100%);
+
+/* ::before: Étoiles colorées + animation shift */
+background-image:
+  radial-gradient(1px 1px at 25% 25%, rgba(255, 255, 255, 0.9), transparent),
+  /* ... étoiles blanches et violettes ... */
+background-size: 300% 300%;
+animation: nebulaShift 15s ease-in-out infinite;</div>
+      </div>
+    </div>
+
+    <h2 style="margin: 40px 0 20px 0;">✨ Styles Bonus - Créatifs</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Electric Neon <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Effet néon cyan/magenta animé</p>
+        <div class="preview electric-neon">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background:
+  radial-gradient(ellipse at top left, rgba(0, 255, 255, 0.2) 0%, transparent 50%),
+  radial-gradient(ellipse at bottom right, rgba(255, 0, 255, 0.2) 0%, transparent 50%),
+  linear-gradient(135deg, #000000 0%, #0a0a1e 100%);
+
+/* Animation pulse électrique */
+animation: electricPulse 4s linear infinite;</div>
+      </div>
+
+      <div class="card">
+        <h3>Matrix Digital <span class="badge badge-css">CSS</span> <span class="badge badge-weight">0 KB</span></h3>
+        <p>Style Matrix avec grille verte</p>
+        <div class="preview matrix-digital">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(180deg, #000000 0%, #001a00 50%, #000000 100%);
+
+/* Grille verte Matrix */
+background-image:
+  repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, ...),
+  repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, ...);</div>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top: 40px;">
+      <h2>💡 Mes Recommandations TOP</h2>
+      <p><strong>🔴 UFC:</strong> "UFC Spotlight" - Ultra dramatique avec les projecteurs</p>
+      <p><strong>🥊 Boxing:</strong> "Boxing Ring 3D" - Les cordes donnent un effet super réaliste</p>
+      <p><strong>🌌 Space:</strong> "Space Galaxy (Animé)" - Animation subtile impressionnante + étoiles violettes</p>
+      <br>
+      <p><strong>⚡ Bonus créatif:</strong> "Electric Neon" pour un style futuriste unique</p>
+    </div>
+
+    <div class="info-box" style="border-left-color: #FF9800;">
+      <h2>📸 Images Optimisées à venir</h2>
+      <p>Je vais maintenant chercher des images professionnelles optimisées (~100-200 KB) pour compléter ces backgrounds CSS.</p>
+      <p>Vous aurez le choix entre CSS pur (0 KB) et images optimisées (100-200 KB) pour chaque template.</p>
+    </div>
+  </div>
+</body>
+</html>

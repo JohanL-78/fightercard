@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testeur de Gradients - Fight Card Templates</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0a0a0a;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: white;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #fff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .card h3 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #fff;
+    }
+
+    .card p {
+      margin: 0 0 15px 0;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .preview {
+      width: 360px;
+      height: 520px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Overlay pour simuler le contenu de la carte */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .top-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+
+    .rating {
+      font-size: 48px;
+      font-weight: bold;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .fighter-name {
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
+      letter-spacing: 2px;
+    }
+
+    .stats {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .code {
+      margin-top: 10px;
+      background: #0d1117;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #58a6ff;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* === GRADIENTS === */
+
+    /* UFC Style - Rouge agressif */
+    .ufc-red {
+      background: linear-gradient(135deg, #8B0000 0%, #000000 50%, #8B0000 100%);
+    }
+
+    .ufc-red-alt {
+      background: linear-gradient(180deg, #1a0000 0%, #8B0000 30%, #000000 70%, #8B0000 100%);
+    }
+
+    .ufc-fire {
+      background: radial-gradient(ellipse at top, #ff0000 0%, #8B0000 40%, #000000 100%);
+    }
+
+    /* Boxing Ring - Bleu/Noir */
+    .boxing-blue {
+      background: linear-gradient(135deg, #001f3f 0%, #000814 50%, #001f3f 100%);
+    }
+
+    .boxing-gold {
+      background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #2d1b00 100%);
+    }
+
+    .boxing-classic {
+      background: linear-gradient(45deg, #000000 0%, #1a1a2e 50%, #000000 100%);
+    }
+
+    /* Space Fighter - Cosmos */
+    .space-cosmos {
+      background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+      position: relative;
+    }
+
+    .space-cosmos::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, white, transparent),
+        radial-gradient(2px 2px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(1px 1px at 80% 10%, white, transparent),
+        radial-gradient(2px 2px at 90% 60%, white, transparent),
+        radial-gradient(1px 1px at 33% 80%, white, transparent),
+        radial-gradient(1px 1px at 15% 90%, white, transparent);
+      background-size: 200% 200%;
+      background-position: 0% 0%, 40% 60%, 130% 270%, 70% 100%, 20% 0%, 50% 50%, 80% 20%;
+      opacity: 0.5;
+    }
+
+    .space-purple {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    }
+
+    .space-nebula {
+      background: radial-gradient(circle at center, #2d1b69 0%, #0a0a1e 50%, #000000 100%);
+    }
+
+    /* Extras - Créatifs */
+    .neon-green {
+      background: linear-gradient(135deg, #000000 0%, #0d3b0d 50%, #000000 100%);
+    }
+
+    .electric-blue {
+      background: linear-gradient(180deg, #000814 0%, #001d3d 40%, #000814 100%);
+    }
+
+    .sunset {
+      background: linear-gradient(180deg, #0a0a0a 0%, #2d1b00 50%, #0a0a0a 100%);
+    }
+
+    /* Pattern SVG pour Boxing */
+    .boxing-pattern {
+      background-color: #0a0a0a;
+      background-image:
+        linear-gradient(30deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111),
+        linear-gradient(150deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111),
+        linear-gradient(30deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111),
+        linear-gradient(150deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111);
+      background-size: 80px 140px;
+      background-position: 0 0, 0 0, 40px 70px, 40px 70px;
+    }
+
+    .info-box {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border-left: 4px solid #4CAF50;
+    }
+
+    .info-box h2 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Testeur de Gradients pour Fight Card Templates</h1>
+
+    <div class="info-box">
+      <h2>📝 Comment utiliser ce testeur</h2>
+      <p>• Visualisez différents fonds pour vos templates de cartes de combat</p>
+      <p>• Tous ces gradients sont générés en CSS (0 KB de poids!)</p>
+      <p>• Copiez le code CSS qui vous plaît et envoyez-le moi pour l'intégrer</p>
+      <p>• Comparez avec vos images actuelles qui pèsent 5-6 MB</p>
+    </div>
+
+    <h2 style="margin: 40px 0 20px 0;">🔴 Style UFC - Rouge agressif</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>UFC Red Classic</h3>
+        <p>Gradient diagonal rouge/noir</p>
+        <div class="preview ufc-red">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(135deg, #8B0000 0%, #000000 50%, #8B0000 100%);</div>
+      </div>
+
+      <div class="card">
+        <h3>UFC Red Vertical</h3>
+        <p>Bandes verticales rouges</p>
+        <div class="preview ufc-red-alt">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(180deg, #1a0000 0%, #8B0000 30%, #000000 70%, #8B0000 100%);</div>
+      </div>
+
+      <div class="card">
+        <h3>UFC Fire</h3>
+        <p>Effet de feu radial</p>
+        <div class="preview ufc-fire">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: radial-gradient(ellipse at top, #ff0000 0%, #8B0000 40%, #000000 100%);</div>
+      </div>
+    </div>
+
+    <h2 style="margin: 40px 0 20px 0;">🥊 Style Boxing Ring - Bleu/Noir classique</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Boxing Blue</h3>
+        <p>Bleu marine diagonal</p>
+        <div class="preview boxing-blue">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(135deg, #001f3f 0%, #000814 50%, #001f3f 100%);</div>
+      </div>
+
+      <div class="card">
+        <h3>Boxing Classic</h3>
+        <p>Noir/Gris sobre</p>
+        <div class="preview boxing-classic">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(45deg, #000000 0%, #1a1a2e 50%, #000000 100%);</div>
+      </div>
+
+      <div class="card">
+        <h3>Boxing Pattern</h3>
+        <p>Motif géométrique cage</p>
+        <div class="preview boxing-pattern">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background-color: #0a0a0a;
+background-image: linear-gradient(30deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%),
+linear-gradient(150deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%);
+background-size: 80px 140px;</div>
+      </div>
+    </div>
+
+    <h2 style="margin: 40px 0 20px 0;">🌌 Style Space Fighter - Cosmos</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Space Cosmos ⭐</h3>
+        <p>Dégradé avec étoiles (RECOMMANDÉ)</p>
+        <div class="preview space-cosmos">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+/* + étoiles en pseudo-élément ::before */</div>
+      </div>
+
+      <div class="card">
+        <h3>Space Purple</h3>
+        <p>Violet cosmique</p>
+        <div class="preview space-purple">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);</div>
+      </div>
+
+      <div class="card">
+        <h3>Space Nebula</h3>
+        <p>Nébuleuse radiale</p>
+        <div class="preview space-nebula">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: radial-gradient(circle at center, #2d1b69 0%, #0a0a1e 50%, #000000 100%);</div>
+      </div>
+    </div>
+
+    <h2 style="margin: 40px 0 20px 0;">✨ Styles bonus - Créatifs</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Neon Green</h3>
+        <p>Vert néon subtil</p>
+        <div class="preview neon-green">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(135deg, #000000 0%, #0d3b0d 50%, #000000 100%);</div>
+      </div>
+
+      <div class="card">
+        <h3>Electric Blue</h3>
+        <p>Bleu électrique</p>
+        <div class="preview electric-blue">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(180deg, #000814 0%, #001d3d 40%, #000814 100%);</div>
+      </div>
+
+      <div class="card">
+        <h3>Sunset Gold</h3>
+        <p>Or sombre (champion)</p>
+        <div class="preview sunset">
+          <div class="overlay">
+            <div class="top-info">
+              <div class="rating">85</div>
+              <div style="font-size: 14px; font-weight: 600;">MMA</div>
+            </div>
+            <div class="fighter-name">FIGHTER</div>
+            <div class="stats">FORCE: 90 | RAPIDITÉ: 85</div>
+          </div>
+        </div>
+        <div class="code">background: linear-gradient(180deg, #0a0a0a 0%, #2d1b00 50%, #0a0a0a 100%);</div>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top: 40px;">
+      <h2>💡 Conseil</h2>
+      <p>Mes recommandations personnelles :</p>
+      <p><strong>UFC:</strong> "UFC Red Classic" - Agressif et iconique</p>
+      <p><strong>Boxing:</strong> "Boxing Pattern" - Original et technique</p>
+      <p><strong>Space:</strong> "Space Cosmos ⭐" - Visuellement impressionnant avec les étoiles</p>
+    </div>
+  </div>
+</body>
+</html>
