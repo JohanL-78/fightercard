@@ -9,7 +9,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'delivered'>('all')
+  const [filter, setFilter] = useState<'all' | 'pending' | 'processing' | 'completed' | 'delivered'>('all')
   const router = useRouter()
 
   useEffect(() => {
@@ -136,6 +136,7 @@ export default function AdminPage() {
 
   const statusConfig = {
     pending: { label: 'En attente', icon: Clock, color: 'text-yellow-500' },
+    processing: { label: 'En traitement', icon: Package, color: 'text-orange-500' },
     completed: { label: 'Traitée', icon: CheckCircle, color: 'text-green-500' },
     delivered: { label: 'Livrée', icon: Package, color: 'text-blue-500' },
   }
@@ -158,7 +159,7 @@ export default function AdminPage() {
 
         {/* Filtres */}
         <div className="flex gap-3">
-          {(['all', 'pending', 'completed', 'delivered'] as const).map((status) => (
+          {(['all', 'pending', 'processing', 'completed', 'delivered'] as const).map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
@@ -190,7 +191,7 @@ export default function AdminPage() {
                         {order.customization.name}
                       </h3>
                       <p className="text-gray-400 text-sm">{order.customerEmail}</p>
-                      <p className="text-gray-500 text-xs mt-1">
+                      <p className="text-gray-300 text-xs mt-1">
                         {new Date(order.createdAt).toLocaleDateString('fr-FR', {
                           day: '2-digit',
                           month: 'long',
@@ -252,6 +253,12 @@ export default function AdminPage() {
 
                   {/* Actions */}
                   <div className="flex gap-2">
+                    <button
+                      onClick={() => router.push(`/admin/orders/${order.id}`)}
+                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      👁️ Voir Détails
+                    </button>
                     {order.finalImageUrl && (
                       <a
                         href={order.finalImageUrl}

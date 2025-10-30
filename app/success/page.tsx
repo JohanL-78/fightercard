@@ -140,7 +140,7 @@ function SuccessPageContent() {
         </div>
 
         {orderId && (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-300">
             ID de commande : {orderId.slice(0, 8)}...
           </p>
         )}

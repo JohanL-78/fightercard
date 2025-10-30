@@ -45,10 +45,12 @@ export interface Order {
   createdAt: string
   customerEmail: string
   customization: CardCustomization
-  finalImageUrl: string
+  fighterPhotoUrl: string          // Photo ORIGINALE uploadée par user
+  templatePreviewUrl?: string       // Template avec textes (optionnel)
+  finalImageUrl?: string            // Carte finale HD (nullable, généré par admin)
   stripePaymentId: string
   amount: number
-  status: 'pending' | 'completed' | 'delivered'
+  status: 'pending' | 'processing' | 'completed' | 'delivered'
   // Adresse de livraison
   shippingName?: string
   shippingAddressLine1?: string

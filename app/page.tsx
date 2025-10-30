@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 import CardEditor from '@/components/CardEditor'
 import ImageParallaxZoom from '@/components/ImageParallaxZoom'
 import SmoothReveal from '@/components/SmoothReveal'
@@ -15,6 +16,7 @@ export default function Home() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [currentCustomization, setCurrentCustomization] = useState<CardCustomization | null>(null)
   const [savedImageUrl, setSavedImageUrl] = useState<string>('')
+  const [originalUserPhoto, setOriginalUserPhoto] = useState<string>('') // Photo BRUTE de l'user
 
   useEffect(() => {
     loadTemplates()
@@ -198,10 +200,11 @@ export default function Home() {
     }
   }
 
-  const handleSaveCard = (imageUrl: string, customization: CardCustomization) => {
+  const handleSaveCard = (imageUrl: string, customization: CardCustomization, originalPhoto: string) => {
     console.log('Carte sauvegardée, passage au checkout')
     setSavedImageUrl(imageUrl)
     setCurrentCustomization(customization)
+    setOriginalUserPhoto(originalPhoto) // Sauvegarder la photo BRUTE
     // Ne pas mettre isCheckingOut à true ici - on attend que l'utilisateur clique
     setTimeout(() => {
       setIsCheckingOut(true)
@@ -209,7 +212,7 @@ export default function Home() {
   }
 
   const handleCheckout = async () => {
-    if (!customerEmail || !currentCustomization || !savedImageUrl) {
+    if (!customerEmail || !currentCustomization || !originalUserPhoto) {
       alert('Veuillez remplir tous les champs')
       return
     }
@@ -217,14 +220,22 @@ export default function Home() {
     setIsProcessingPayment(true)
 
     try {
-      console.log('Création de la session de paiement...')
-      const response = await fetch('/api/create-checkout', {
+      console.log('Upload photo originale vers Cloudinary...')
+
+      // Upload photo ORIGINALE (pas le canvas généré)
+      const photoBlob = await fetch(originalUserPhoto).then(res => res.blob())
+      const photoUrl = await uploadToCloudinary(photoBlob, 'original-photos')
+      console.log('Photo originale uploadée:', photoUrl)
+
+      // Créer commande avec photo originale
+      console.log('Création de la commande...')
+      const response = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customization: { ...currentCustomization, photo: savedImageUrl },
-          customerEmail,
-          // Le prix est défini côté serveur pour des raisons de sécurité
+          photo_url: photoUrl,
+          customization: currentCustomization,
+          customer_email: customerEmail,
         }),
       })
 
@@ -236,15 +247,16 @@ export default function Home() {
         throw new Error(data.error)
       }
 
-      if (data.url) {
-        console.log('Redirection vers Stripe:', data.url)
+      if (data.success && data.url) {
+        // Redirection vers Stripe Checkout
+        console.log('Redirection vers Stripe...')
         window.location.href = data.url
       } else {
-        throw new Error('Aucune URL de redirection reçue')
+        throw new Error('Échec création commande ou session Stripe')
       }
     } catch (error) {
-      console.error('Error creating checkout:', error)
-      alert('Erreur lors de la création du paiement: ' + (error as Error).message)
+      console.error('Error creating order:', error)
+      alert('Erreur lors de la création de la commande: ' + (error as Error).message)
       setIsProcessingPayment(false)
     }
   }
@@ -366,11 +378,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-bounce">
-          <span className="text-xs text-gray-400 tracking-widest uppercase">Découvrir</span>
-          <div className="h-12 w-[2px] bg-gradient-to-b from-blue-500 to-transparent" />
-        </div>
+      
       </section>
 
       {/* How it works Section */}
@@ -451,7 +459,7 @@ export default function Home() {
               </div>
               <div>
                 <h4 className="font-bold mb-1">Upload Photo</h4>
-                <p className="text-sm text-gray-500">Ajoutez votre meilleure photo de combat</p>
+                <p className="text-sm text-gray-300">Ajoutez votre meilleure photo de combat</p>
               </div>
             </div>
 
@@ -463,7 +471,7 @@ export default function Home() {
               </div>
               <div>
                 <h4 className="font-bold mb-1">Stats Personnalisées</h4>
-                <p className="text-sm text-gray-500">Force, rapidité, endurance, etc.</p>
+                <p className="text-sm text-gray-300">Force, rapidité, endurance, etc.</p>
               </div>
             </div>
 
@@ -475,7 +483,7 @@ export default function Home() {
               </div>
               <div>
                 <h4 className="font-bold mb-1">Design Pro</h4>
-                <p className="text-sm text-gray-500">Templates créés par des designers</p>
+                <p className="text-sm text-gray-300">Templates créés par des designers</p>
               </div>
             </div>
 
@@ -487,7 +495,7 @@ export default function Home() {
               </div>
               <div>
                 <h4 className="font-bold mb-1">Qualité HD</h4>
-                <p className="text-sm text-gray-500">720×1040px pour un rendu parfait</p>
+                <p className="text-sm text-gray-300">720×1040px pour un rendu parfait</p>
               </div>
             </div>
           </div>
@@ -553,7 +561,7 @@ export default function Home() {
                     <p className="text-base font-bold text-white group-hover:text-blue-500 transition-colors">
                       {template.name}
                     </p>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">
+                    <p className="text-xs text-gray-300 uppercase tracking-wider mt-1">
                       {template.category}
                     </p>
                   </div>
@@ -635,7 +643,7 @@ export default function Home() {
                       className="input-modern w-full"
                       required
                     />
-                    <p className="text-xs text-gray-500">Nous vous enverrons la carte HD à cette adresse</p>
+                    <p className="text-xs text-gray-300">Nous vous enverrons la carte HD à cette adresse</p>
                   </div>
 
                   <div className="gradient-border p-6">
