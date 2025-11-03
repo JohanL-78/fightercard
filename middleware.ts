@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { isAuthenticated } from '@/lib/auth-helpers'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Protéger la route /admin (SAUF /admin/login)
   if (request.nextUrl.pathname.startsWith('/admin')) {
     // Autoriser l'accès à la page de login sans authentification
@@ -9,15 +10,13 @@ export function middleware(request: NextRequest) {
       return NextResponse.next()
     }
 
-    const authToken = request.cookies.get('admin-auth-token')?.value
+    // 🔒 Vérifier la validité du JWT
+    const authenticated = await isAuthenticated(request)
 
-    if (!authToken) {
-      // Rediriger vers la page de connexion
+    if (!authenticated) {
+      // Token invalide, expiré ou manquant → redirection vers login
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
-
-    // Vérifier la validité du token (sera fait côté serveur)
-    // Pour l'instant, on vérifie juste sa présence
   }
 
   return NextResponse.next()

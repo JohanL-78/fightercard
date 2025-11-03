@@ -274,7 +274,15 @@ export default function AdminPage() {
                         onClick={() => updateOrderStatus(order.id, 'completed')}
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                       >
-                        Marquer traitée
+                        ✅ Marquer traitée
+                      </button>
+                    )}
+                    {order.status === 'processing' && (
+                      <button
+                        onClick={() => updateOrderStatus(order.id, 'completed')}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                      >
+                        ✅ Marquer traitée
                       </button>
                     )}
                     {order.status === 'completed' && (
@@ -282,7 +290,7 @@ export default function AdminPage() {
                         onClick={() => updateOrderStatus(order.id, 'delivered')}
                         className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
                       >
-                        Marquer livrée
+                        📧 Marquer livrée
                       </button>
                     )}
                   </div>

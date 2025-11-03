@@ -57,10 +57,10 @@ const DEFAULT_TEMPLATES: CardTemplate[] = [
   },
   {
     id: 'laser',
-    name: 'Laser',
-    imageUrl: '/laser.png',
+    name: 'Laser Fighter',
+    imageUrl: '/3dwhite.png',
     category: 'other',
-    color: '#8B5CF6',
+    color: '#FFFFFF',
     positions: {
       photo: { x: 45, y: 36, width: 280, height: 300 },
       username: { x: 180, y: 35, fontSize: 16 },
@@ -104,12 +104,22 @@ export default function AdminOrderDetailsPage({ params }: { params: Promise<{ id
       const { order: data } = await response.json()
       setOrder(data)
 
+      // Debug: afficher toutes les infos
+      console.log('📦 Commande chargée:', {
+        templateId: data.customization.templateId,
+        name: data.customization.name,
+        rating: data.customization.rating
+      })
+      console.log('📚 Templates disponibles:', DEFAULT_TEMPLATES.map(t => ({ id: t.id, name: t.name })))
+
       // Trouver le template dans les templates hardcodés
       const foundTemplate = DEFAULT_TEMPLATES.find(t => t.id === data.customization.templateId)
       if (foundTemplate) {
+        console.log('✅ Template trouvé:', foundTemplate.name, '(ID:', foundTemplate.id, ')')
         setTemplate(foundTemplate)
       } else {
-        console.warn('Template not found:', data.customization.templateId)
+        console.warn('⚠️ Template not found:', data.customization.templateId, '- utilisation du template par défaut')
+        console.warn('Templates disponibles:', DEFAULT_TEMPLATES.map(t => t.id))
         // Utiliser le premier template par défaut
         setTemplate(DEFAULT_TEMPLATES[0])
       }
@@ -232,21 +242,85 @@ export default function AdminOrderDetailsPage({ params }: { params: Promise<{ id
           </div>
         </div>
 
+        {/* Section Résumé Commande Client */}
+        <div className="bg-gray-800 rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">📋 Données de la Commande Client</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <div className="bg-gray-700 rounded p-3">
+                <span className="text-gray-400 text-sm">Nom du Fighter</span>
+                <p className="text-white font-bold text-lg">{customization.name || 'N/A'}</p>
+              </div>
+              <div className="bg-gray-700 rounded p-3">
+                <span className="text-gray-400 text-sm">Rating Overall</span>
+                <p className="text-white font-bold text-lg">{customization.rating}</p>
+              </div>
+              <div className="bg-gray-700 rounded p-3">
+                <span className="text-gray-400 text-sm">Template choisi</span>
+                <p className="text-white font-bold">{template.name}</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="bg-gray-700 rounded p-3">
+                <span className="text-gray-400 text-sm block mb-2">Drapeau</span>
+                {customization.flagUrl ? (
+                  <img src={customization.flagUrl} alt="Flag" className="w-16 h-12 object-cover rounded border border-gray-600" />
+                ) : (
+                  <p className="text-gray-500 italic">Aucun drapeau</p>
+                )}
+              </div>
+              <div className="bg-gray-700 rounded p-3">
+                <span className="text-gray-400 text-sm block mb-2">Statistiques</span>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Force:</span>
+                    <span className="text-white font-bold">{customization.stats.force}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Rapidité:</span>
+                    <span className="text-white font-bold">{customization.stats.rapidite}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Grappling:</span>
+                    <span className="text-white font-bold">{customization.stats.grappling}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Endurance:</span>
+                    <span className="text-white font-bold">{customization.stats.endurance}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Striking:</span>
+                    <span className="text-white font-bold">{customization.stats.striking}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Équilibre:</span>
+                    <span className="text-white font-bold">{customization.stats.equilibre}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Section CardEditor */}
         <div className="bg-gray-800 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-white mb-4">
             🎨 Éditeur de Carte (Générer la Carte Finale)
           </h2>
-          <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4 mb-6">
-            <p className="text-yellow-300 text-sm">
-              💡 <strong>Astuce:</strong> Uploadez la photo traitée (sans fond) dans l&apos;éditeur ci-dessous.
-              Tous les paramètres du user sont déjà pré-remplis. Vous pouvez les ajuster avant de générer la carte finale.
+          <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-6">
+            <p className="text-blue-300 text-sm">
+              ✅ <strong>Toutes les données du client sont pré-remplies ci-dessous.</strong><br/>
+              Uploadez uniquement la photo détourée, puis générez la carte finale HD.
             </p>
           </div>
 
           <CardEditor
             template={template}
             onSave={handleSaveCard}
+            initialCustomization={{
+              ...customization,
+              photo: '' // Ne pas pré-remplir la photo, l'admin va uploader la version détourée
+            }}
           />
         </div>
 
@@ -272,6 +346,99 @@ export default function AdminOrderDetailsPage({ params }: { params: Promise<{ id
             </div>
           </div>
         )}
+
+        {/* Actions de gestion de statut */}
+        <div className="bg-gray-800 rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">📦 Gestion de la Commande</h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+              <div>
+                <span className="text-gray-400 text-sm">Statut actuel</span>
+                <p className="text-white font-bold text-lg capitalize">{order.status}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              {order.status === 'pending' && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/admin/orders`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: order.id, status: 'completed' }),
+                      })
+                      if (response.ok) {
+                        alert('✅ Commande marquée comme traitée')
+                        loadOrder()
+                      }
+                    } catch (error) {
+                      console.error(error)
+                      alert('Erreur lors de la mise à jour')
+                    }
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition font-medium"
+                >
+                  ✅ Marquer comme Traitée
+                </button>
+              )}
+
+              {order.status === 'processing' && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/admin/orders`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: order.id, status: 'completed' }),
+                      })
+                      if (response.ok) {
+                        alert('✅ Commande marquée comme traitée')
+                        loadOrder()
+                      }
+                    } catch (error) {
+                      console.error(error)
+                      alert('Erreur lors de la mise à jour')
+                    }
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition font-medium"
+                >
+                  ✅ Marquer comme Traitée
+                </button>
+              )}
+
+              {order.status === 'completed' && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/admin/orders`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: order.id, status: 'delivered' }),
+                      })
+                      if (response.ok) {
+                        alert('📧 Commande marquée comme livrée')
+                        loadOrder()
+                      }
+                    } catch (error) {
+                      console.error(error)
+                      alert('Erreur lors de la mise à jour')
+                    }
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition font-medium"
+                >
+                  📧 Marquer comme Livrée
+                </button>
+              )}
+
+              {order.status === 'delivered' && (
+                <div className="flex-1 p-4 bg-blue-900/30 border border-blue-700 rounded-lg text-center">
+                  <p className="text-blue-300 font-medium">✅ Commande livrée au client</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>

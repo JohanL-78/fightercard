@@ -9,6 +9,7 @@ import type { CardCustomization, CardTemplate } from '@/lib/types'
 interface CardEditorProps {
   template: CardTemplate
   onSave?: (imageUrl: string, customization: CardCustomization, originalPhoto: string) => void
+  initialCustomization?: CardCustomization // Données pré-remplies pour l'admin
 }
 
 // Liste des pays avec codes ISO pour FlagCDN
@@ -104,19 +105,49 @@ const hexToRgba = (hex: string, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export default function CardEditor({ template, onSave }: CardEditorProps) {
+export default function CardEditor({ template, onSave, initialCustomization }: CardEditorProps) {
   const templateColor = template.color || '#3B82F6' // Couleur par défaut: bleu
-  const [customization, setCustomization] = useState<CardCustomization>({
-    templateId: template.id, photo: '', username: 'fighter_name', name: 'FIGHTER', rating: 85, flagUrl: '', removeBackground: false,
+
+  // Utiliser initialCustomization si fournie (mode admin), sinon valeurs par défaut (mode client)
+  const defaultCustomization: CardCustomization = {
+    templateId: template.id,
+    photo: '',
+    username: 'fighter_name',
+    name: 'FIGHTER',
+    rating: 85,
+    flagUrl: '',
+    removeBackground: false,
     stats: { force: 90, rapidite: 85, grappling: 88, endurance: 80, striking: 82, equilibre: 87 },
-  })
-  const [originalUserPhoto, setOriginalUserPhoto] = useState<string>('') // Photo BRUTE uploadée par l'user
-  const [selectedCountryCode, setSelectedCountryCode] = useState<string>('')
+  }
+
+  const [customization, setCustomization] = useState<CardCustomization>(
+    initialCustomization || defaultCustomization
+  )
+  const [originalUserPhoto, setOriginalUserPhoto] = useState<string>('') // Photo originale de l'utilisateur
+
+  // Extraire le code pays depuis l'URL du drapeau (si fourni)
+  const extractCountryCode = (flagUrl: string): string => {
+    if (!flagUrl) return ''
+    // flagUrl format: https://flagcdn.com/w320/fr.png
+    const match = flagUrl.match(/\/w320\/([a-z]{2})\.png/)
+    return match ? match[1] : ''
+  }
+
+  const [selectedCountryCode, setSelectedCountryCode] = useState<string>(
+    extractCountryCode(initialCustomization?.flagUrl || '')
+  )
   const [isProcessing, setIsProcessing] = useState(false)
+
+  // Mettre à jour le templateId quand le template change (côté client uniquement)
+  useEffect(() => {
+    if (!initialCustomization) {
+      // Mode client : mettre à jour le templateId quand le template change
+      setCustomization(prev => ({ ...prev, templateId: template.id }))
+    }
+  }, [template.id, initialCustomization])
   const [backgroundImageBase64, setBackgroundImageBase64] = useState<string>('')
   const [backgroundPreviewBase64, setBackgroundPreviewBase64] = useState<string>('')
   const [flagImageBase64, setFlagImageBase64] = useState<string>('')
-  const [debugCanvasUrl, setDebugCanvasUrl] = useState<string | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -182,8 +213,8 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
       const reader = new FileReader();
       reader.onload = (e) => {
         const photoData = e.target?.result as string;
-        setOriginalUserPhoto(photoData); // Sauvegarder la photo BRUTE
-        setCustomization(prev => ({ ...prev, photo: photoData, removeBackground: false }));
+        setOriginalUserPhoto(photoData); // Sauvegarde de la photo originale
+        setCustomization(prev => ({ ...prev, photo: photoData, removeBackground: false }))
       };
       reader.readAsDataURL(file);
     },
@@ -226,22 +257,16 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
     }
   }
 
-  // Une nouvelle fonction juste pour le débogage
-  const handleDebugRender = async () => {
-    const imageUrl = await handleExportCard(true)
-    if (imageUrl) {
-      setDebugCanvasUrl(imageUrl)
-    }
-  }
-
   // --- VERSION FINALE ET CORRIGÉE DE L'EXPORT ---
-  const handleExportCard = async (debugMode = false) => {
+  const handleExportCard = async () => {
     setIsProcessing(true)
     try {
-      const scale = 4.5
+      // Scale pour atteindre 300 DPI sur format A4 (210×297mm)
+      // 2480×3508px = 210mm × 297mm à 300 DPI
+      const scale = 6.88
       const canvas = document.createElement('canvas')
-      canvas.width = 360 * scale
-      canvas.height = 520 * scale
+      canvas.width = 360 * scale  // = 2476.8px ≈ 2480px
+      canvas.height = 520 * scale // = 3577.6px ≈ 3508px
       const ctx = canvas.getContext('2d', { alpha: false }) // On désactive la transparence pour un fond uni
       if (!ctx) throw new Error('Impossible de créer le contexte canvas')
 
@@ -438,13 +463,7 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
       // 4. FINALISATION ET UPLOAD
       const dataUrl = canvas.toDataURL('image/png', 0.95) // Qualité augmentée pour HD
 
-      // Si on est en mode débogage, on retourne juste l'image et on arrête
-      if (debugMode) {
-        setIsProcessing(false)
-        return dataUrl
-      }
-
-      // Sinon, on continue le processus normal d'upload DIRECT vers Cloudinary
+      // Upload DIRECT vers Cloudinary
       // Conversion du data URL en Blob pour l'upload
       const blob = await fetch(dataUrl).then(res => res.blob())
 
@@ -475,12 +494,12 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
         size: `${(uploadData.bytes / 1024 / 1024).toFixed(2)} MB`,
       })
 
-      if (onSave) onSave(cloudinaryUrl, { ...customization, photo: cloudinaryUrl }, originalUserPhoto)
+      // Passer la photo CROPPÉE (customization.photo) au lieu de originalUserPhoto
+      if (onSave) onSave(cloudinaryUrl, { ...customization, photo: cloudinaryUrl }, customization.photo)
       else alert('Veuillez finaliser votre commande')
 
     } catch (error) { console.error('Erreur lors de la génération de la carte:', error); alert('Une erreur est survenue.') }
     finally { setIsProcessing(false) }
-    return null
   }
 
   return (
@@ -489,7 +508,61 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
       <div className="space-y-6 lg:order-1">
         <div className="mb-8"><div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 border border-blue-600/30 rounded-full mb-4"><svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg><span className="text-xs font-bold text-blue-500 tracking-wide">Personnalisation</span></div><h2 className="text-3xl font-black tracking-tight">Créez Votre <span className="text-blue-500">Carte</span></h2><p className="text-gray-400 mt-2">Remplissez tous les champs ci-dessous pour personnaliser votre carte</p></div>
         <div className="bg-blue-600/10 border border-blue-600/30 rounded-xl p-4 mb-6"><div className="flex items-start gap-3"><svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg><div className="text-sm"><p className="font-medium text-white mb-1">Comment ça marche :</p><ul className="text-gray-400 space-y-1 list-disc list-inside"><li>Ajoutez votre photo de combat</li><li>Entrez votre nom et vos statistiques</li><li>Visualisez en temps réel à droite</li><li>Cliquez sur &quot;Passer commande&quot; quand c&apos;est prêt</li></ul></div></div></div>
-        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Photo du combattant</label><div {...getRootProps()} className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${isDragActive ? 'border-blue-600 bg-blue-600/10 scale-105' : 'border-white/10 hover:border-blue-600/50 bg-[#0f0f0f]'}`}><input {...getInputProps()} /><div className={`transition-transform duration-300 ${isDragActive ? 'scale-110' : ''}`}><Upload className="mx-auto mb-4 text-blue-500" size={48} /><p className="text-white font-medium mb-1">{isDragActive ? 'Déposez la photo ici' : 'Glissez une photo ici'}</p><p className="text-sm text-gray-300">ou cliquez pour sélectionner</p></div></div>{customization.photo && !customization.removeBackground && (<button onClick={handleRemoveBackground} disabled={isProcessing} className="btn-secondary w-full disabled:opacity-50">{isProcessing ? (<span className="flex items-center justify-center gap-2"><div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>Traitement...</span>) : ('Supprimer le fond')}</button>)}</div>
+        <div className="space-y-3">
+          <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Photo du combattant</label>
+
+          {/* Message informatif important */}
+          <div className="bg-blue-600/10 border border-blue-600/30 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div className="text-xs text-gray-300 space-y-2">
+                <p className="font-medium text-white">💡 Conseil professionnel :</p>
+                <p>Pour un résultat optimal, utilisez une <span className="text-blue-400 font-semibold">photo sur fond transparent (PNG)</span> de haute qualité.</p>
+                <p className="text-gray-400">L&apos;outil de suppression automatique ci-dessous est un <span className="text-yellow-400 font-medium">aperçu rapide</span>. Votre carte finale sera traitée professionnellement avec un fond parfaitement retiré.</p>
+              </div>
+            </div>
+          </div>
+
+          <div {...getRootProps()} className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${isDragActive ? 'border-blue-600 bg-blue-600/10 scale-105' : 'border-white/10 hover:border-blue-600/50 bg-[#0f0f0f]'}`}>
+            <input {...getInputProps()} />
+            <div className={`transition-transform duration-300 ${isDragActive ? 'scale-110' : ''}`}>
+              <Upload className="mx-auto mb-4 text-blue-500" size={48} />
+              <p className="text-white font-medium mb-1">
+                {isDragActive ? 'Déposez la photo ici' : 'Glissez une photo ici'}
+              </p>
+              <p className="text-sm text-gray-300">ou cliquez pour sélectionner</p>
+            </div>
+          </div>
+
+          {customization.photo && !customization.removeBackground && (
+            <div className="space-y-2">
+              <button
+                onClick={handleRemoveBackground}
+                disabled={isProcessing}
+                className="btn-secondary w-full disabled:opacity-50"
+              >
+                {isProcessing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    Traitement...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Tester la suppression du fond
+                  </span>
+                )}
+              </button>
+              <p className="text-xs text-center text-yellow-400 font-medium">
+                ⚠️ Aperçu uniquement - La carte finale aura un traitement professionnel
+              </p>
+            </div>
+          )}
+        </div>
         <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Nom du combattant</label><input type="text" value={customization.name} onChange={(e) => setCustomization(prev => ({ ...prev, name: e.target.value.toUpperCase() }))} className="input-modern w-full" placeholder='Ex: FIGHTER'/><p className="text-xs text-gray-300">Le nom sera automatiquement en majuscules</p></div>
         <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Note globale</label><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-gray-400">OVERALL RATING</span><span className="text-sm font-bold text-blue-500">{customization.rating}</span></div><div className="relative pt-1"><input type="range" min="0" max="100" value={customization.rating} onChange={(e) => setCustomization(prev => ({ ...prev, rating: parseInt(e.target.value) || 0 }))} style={{ background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.rating}%, rgba(255, 255, 255, 0.1) ${customization.rating}%, rgba(255, 255, 255, 0.1) 100%)` }} className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"/></div></div>
         <div className="space-y-3">
@@ -551,24 +624,6 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
             </div>
           )
         })}</div></div>
-
-        {/* --- NOUVELLE SECTION DE DÉBOGAGE --- */}
-        <div className="space-y-3 pt-4 border-t-2 border-dashed border-red-500/50 mt-6">
-          <h3 className="text-lg font-bold text-red-500 uppercase">Outils de Développeur</h3>
-          <p className="text-xs text-gray-400">
-            Utilisez ce bouton pour générer un aperçu HD sans uploader l&apos;image.
-            L&apos;image apparaîtra sous l&apos;aperçu en temps réel.
-          </p>
-          <button
-            onClick={handleDebugRender}
-            disabled={isProcessing || !customization.photo}
-            className="btn-secondary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.5)' }}
-          >
-            Générer l&apos;Aperçu Canvas HD
-          </button>
-        </div>
-        {/* --- FIN DE LA SECTION --- */}
 
         <div className="space-y-3 pt-4"><button onClick={() => handleExportCard()} disabled={isProcessing || !customization.photo} className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? (<span className="flex items-center justify-center gap-3"><div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>Génération en cours...</span>) : ( <span className="flex items-center justify-center gap-2"><Download size={20} />Passer commande</span> )}</button><button onClick={() => { setCustomization({ templateId: template.id, photo: '', username: '', name: '', rating: 85, flagUrl: '', removeBackground: false, stats: { force: 90, rapidite: 85, grappling: 88, endurance: 80, striking: 82, equilibre: 87 } }); setSelectedCountryCode(''); }} className="btn-outline w-full"><span className="flex items-center justify-center gap-2"><Trash2 size={18} />Réinitialiser</span></button></div>
       </div>
@@ -722,26 +777,6 @@ export default function CardEditor({ template, onSave }: CardEditorProps) {
             </div>
           </div>
         </div>
-
-        {/* --- NOUVEL APERÇU CANVAS (si généré) --- */}
-        {debugCanvasUrl && (
-          <div className="mt-8 border-t-2 border-dashed border-red-500/50 pt-8 text-center">
-            <h3 className="text-lg font-bold text-red-500 uppercase mb-4">Aperçu Rendu Canvas HD</h3>
-            <img
-              src={debugCanvasUrl}
-              alt="Aperçu Canvas"
-              className="rounded-xl shadow-2xl"
-              style={{ width: '360px', height: '520px' }}
-            />
-            <button
-              onClick={() => setDebugCanvasUrl(null)}
-              className="btn-outline mt-4"
-            >
-              Cacher l&apos;aperçu Canvas
-            </button>
-          </div>
-        )}
-        {/* --- FIN DE L'APERÇU CANVAS --- */}
       </div>
     </div>
   )

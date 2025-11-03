@@ -43,7 +43,12 @@ export async function POST(request: NextRequest) {
     const apiId = process.env.PIXIAN_API_ID
     const apiSecret = process.env.PIXIAN_API_SECRET
     if (!apiId || !apiSecret) {
-      return NextResponse.json({ error: 'Pixian API credentials not configured' }, { status: 500 })
+      return NextResponse.json(
+        {
+          error: 'La suppression automatique du fond n\'est pas disponible actuellement. Veuillez utiliser une photo avec fond transparent pour un résultat optimal.'
+        },
+        { status: 503 }
+      )
     }
 
     // 🔒 ÉTAPE 4: Préparation de la requête Pixian (fichier déjà validé)

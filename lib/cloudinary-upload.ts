@@ -1,20 +1,12 @@
-// Utilitaire pour uploader vers Cloudinary en mode unsigned
+// 🔒 Utilitaire pour uploader vers Cloudinary en mode unsigned sécurisé
 
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`
 
 export type CloudinaryFolder = 'original-photos' | 'templates' | 'final-cards'
 
-interface CloudinaryUploadResult {
-  secure_url: string
-  public_id: string
-  width: number
-  height: number
-  format: string
-  bytes: number
-}
-
 /**
  * Upload un fichier vers Cloudinary en mode unsigned
+ * Sécurisé via restrictions du preset Cloudinary (taille, types, rate limiting)
  * @param file - Fichier ou Blob à uploader
  * @param folder - Dossier de destination dans Cloudinary
  * @returns URL sécurisée de l'image uploadée
@@ -23,27 +15,49 @@ export async function uploadToCloudinary(
   file: File | Blob,
   folder: CloudinaryFolder
 ): Promise<string> {
+  // Validation côté client (backup - vraie validation dans Cloudinary)
   if (file.size > 10 * 1024 * 1024) {
     throw new Error('Fichier trop volumineux (max 10 MB)')
   }
 
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('upload_preset', 'fight-cards-unsigned')
-  formData.append('folder', `fight-cards/${folder}`)
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'fight-cards-unsigned')
+    formData.append('folder', `fight-cards/${folder}`)
 
-  const response = await fetch(CLOUDINARY_UPLOAD_URL, {
-    method: 'POST',
-    body: formData
-  })
+    console.log('📤 Upload vers Cloudinary...')
+    const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+      method: 'POST',
+      body: formData
+    })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error?.message || 'Erreur upload Cloudinary')
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('❌ Erreur Cloudinary:', error)
+      throw new Error(error.error?.message || 'Erreur upload Cloudinary')
+    }
+
+    const data = await response.json()
+    console.log('✅ Upload réussi:', data.secure_url)
+    return data.secure_url
+
+  } catch (error) {
+    console.error('❌ Erreur upload:', error)
+    throw error
   }
+}
 
-  const data: CloudinaryUploadResult = await response.json()
-  return data.secure_url
+/**
+ * Convertit un Blob en base64
+ */
+export function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
 }
 
 /**

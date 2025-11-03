@@ -16,7 +16,7 @@ export default function Home() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [currentCustomization, setCurrentCustomization] = useState<CardCustomization | null>(null)
   const [savedImageUrl, setSavedImageUrl] = useState<string>('')
-  const [originalUserPhoto, setOriginalUserPhoto] = useState<string>('') // Photo BRUTE de l'user
+  const [originalUserPhoto, setOriginalUserPhoto] = useState<string>('') // Photo originale de l'utilisateur
 
   useEffect(() => {
     loadTemplates()
@@ -204,7 +204,7 @@ export default function Home() {
     console.log('Carte sauvegardée, passage au checkout')
     setSavedImageUrl(imageUrl)
     setCurrentCustomization(customization)
-    setOriginalUserPhoto(originalPhoto) // Sauvegarder la photo BRUTE
+    setOriginalUserPhoto(originalPhoto) // Sauvegarde de la photo originale de l'utilisateur
     // Ne pas mettre isCheckingOut à true ici - on attend que l'utilisateur clique
     setTimeout(() => {
       setIsCheckingOut(true)
@@ -212,6 +212,7 @@ export default function Home() {
   }
 
   const handleCheckout = async () => {
+    // originalUserPhoto contient la photo originale non traitée de l'utilisateur
     if (!customerEmail || !currentCustomization || !originalUserPhoto) {
       alert('Veuillez remplir tous les champs')
       return
@@ -222,7 +223,7 @@ export default function Home() {
     try {
       console.log('Upload photo originale vers Cloudinary...')
 
-      // Upload photo ORIGINALE (pas le canvas généré)
+      // Upload photo originale (non traitée)
       const photoBlob = await fetch(originalUserPhoto).then(res => res.blob())
       const photoUrl = await uploadToCloudinary(photoBlob, 'original-photos')
       console.log('Photo originale uploadée:', photoUrl)
@@ -288,12 +289,14 @@ export default function Home() {
               <p className="text-xs text-gray-400 font-medium">Cartes de Combat Personnalisées</p>
             </div>
           </div>
-          <a
-            href="/admin"
-            className="btn-outline text-sm px-5 py-2.5"
-          >
-            Admin
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="/faq"
+              className="text-gray-300 hover:text-blue-500 transition-colors font-medium"
+            >
+              FAQ
+            </a>
+          </div>
         </div>
       </header>
 
@@ -355,9 +358,9 @@ export default function Home() {
               <div className="mt-16 flex gap-12 items-center justify-center flex-wrap">
                 <div className="text-center">
                   <div className="text-4xl font-black text-blue-500 mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                    720×1040px
+                    2480×3508px
                   </div>
-                  <div className="text-sm text-gray-300 tracking-wide">Résolution HD</div>
+                  <div className="text-sm text-gray-300 tracking-wide">Résolution 300 DPI (A4)</div>
                 </div>
                 <div className="h-12 w-[1px] bg-white/20 hidden md:block" />
                 <div className="text-center">
@@ -378,128 +381,7 @@ export default function Home() {
           </div>
         </div>
 
-      
-      </section>
 
-      {/* How it works Section */}
-      <section className="py-20 px-6 md:px-12 bg-[#0f0f0f]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 border border-blue-600/30 rounded-full mb-6">
-              <span className="text-sm font-bold text-blue-500 tracking-wide uppercase">Simple et Rapide</span>
-            </div>
-            <h2 className="text-5xl md:text-6xl font-black tracking-tight mb-6">
-              Comment ça <span className="text-blue-500">Marche ?</span>
-            </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Créez votre carte personnalisée en 3 étapes simples
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {/* Step 1 */}
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-blue-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
-              <div className="relative premium-card p-8 text-center">
-                <div className="relative inline-flex mb-6">
-                  <div className="absolute inset-0 bg-blue-600 rounded-full blur-xl opacity-50"></div>
-                  <div className="relative h-20 w-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto">
-                    <span className="text-4xl font-black text-white">1</span>
-                  </div>
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Choisissez un Template</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Sélectionnez parmi nos {templates.length}+ templates professionnels conçus pour les combattants
-                </p>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-blue-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
-              <div className="relative premium-card p-8 text-center">
-                <div className="relative inline-flex mb-6">
-                  <div className="absolute inset-0 bg-blue-600 rounded-full blur-xl opacity-50"></div>
-                  <div className="relative h-20 w-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto">
-                    <span className="text-4xl font-black text-white">2</span>
-                  </div>
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Personnalisez</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Ajoutez votre photo, nom, statistiques et créez une carte unique à votre image
-                </p>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-red-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
-              <div className="relative premium-card p-8 text-center">
-                <div className="relative inline-flex mb-6">
-                  <div className="absolute inset-0 bg-red-600 rounded-full blur-xl opacity-50"></div>
-                  <div className="relative h-20 w-20 bg-red-600 rounded-full flex items-center justify-center mx-auto">
-                    <span className="text-4xl font-black text-white">3</span>
-                  </div>
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Recevez en HD</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Payez 15€ et recevez votre carte en haute définition (720×1040px) par email
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Features */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="flex items-start gap-4 p-6 bg-[#0a0a0a] rounded-xl border border-white/5 hover:border-blue-600/30 transition-colors">
-              <div className="h-12 w-12 bg-blue-600/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold mb-1">Upload Photo</h4>
-                <p className="text-sm text-gray-300">Ajoutez votre meilleure photo de combat</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-6 bg-[#0a0a0a] rounded-xl border border-white/5 hover:border-blue-600/30 transition-colors">
-              <div className="h-12 w-12 bg-blue-600/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold mb-1">Stats Personnalisées</h4>
-                <p className="text-sm text-gray-300">Force, rapidité, endurance, etc.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-6 bg-[#0a0a0a] rounded-xl border border-white/5 hover:border-blue-600/30 transition-colors">
-              <div className="h-12 w-12 bg-blue-600/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold mb-1">Design Pro</h4>
-                <p className="text-sm text-gray-300">Templates créés par des designers</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-6 bg-[#0a0a0a] rounded-xl border border-white/5 hover:border-red-600/30 transition-colors">
-              <div className="h-12 w-12 bg-red-600/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold mb-1">Qualité HD</h4>
-                <p className="text-sm text-gray-300">720×1040px pour un rendu parfait</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       <div className="pb-12" id="templates">
