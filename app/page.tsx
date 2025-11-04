@@ -1,10 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 import CardEditor from '@/components/CardEditor'
 import ImageParallaxZoom from '@/components/ImageParallaxZoom'
 import SmoothReveal from '@/components/SmoothReveal'
+import CookieBanner from '@/components/CookieBanner'
 import type { CardTemplate, CardCustomization } from '@/lib/types'
 
 export default function Home() {
@@ -593,6 +595,31 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="bg-black/50 border-t border-white/10 py-8 mt-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-400">
+              © {new Date().getFullYear()} Fighter Card. Tous droits réservés.
+            </p>
+            <div className="flex gap-6">
+              <Link href="/legal" className="text-sm text-gray-400 hover:text-white transition">
+                Mentions Légales
+              </Link>
+              <Link href="/privacy" className="text-sm text-gray-400 hover:text-white transition">
+                Politique de Confidentialité
+              </Link>
+              <Link href="/faq" className="text-sm text-gray-400 hover:text-white transition">
+                FAQ
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Cookie Banner */}
+      <CookieBanner />
     </main>
   )
 }
