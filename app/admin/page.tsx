@@ -10,6 +10,10 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pending' | 'processing' | 'completed' | 'delivered'>('all')
+  const [contactEmail, setContactEmail] = useState('')
+  const [newContactEmail, setNewContactEmail] = useState('')
+  const [savingEmail, setSavingEmail] = useState(false)
+  const [showEmailSettings, setShowEmailSettings] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -20,6 +24,7 @@ export default function AdminPage() {
         if (response.ok) {
           setIsAuthenticated(true)
           loadOrders()
+          loadContactEmail()
         } else {
           router.push('/admin/login')
         }
@@ -34,6 +39,49 @@ export default function AdminPage() {
     checkAuth()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const loadContactEmail = async () => {
+    try {
+      const response = await fetch('/api/settings/contact-email')
+      const data = await response.json()
+      setContactEmail(data.email)
+      setNewContactEmail(data.email)
+    } catch (error) {
+      console.error('Erreur chargement email:', error)
+    }
+  }
+
+  const saveContactEmail = async () => {
+    if (!newContactEmail || !newContactEmail.includes('@')) {
+      alert('Email invalide')
+      return
+    }
+
+    setSavingEmail(true)
+    try {
+      const response = await fetch('/api/settings/contact-email', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: newContactEmail }),
+      })
+
+      if (response.ok) {
+        setContactEmail(newContactEmail)
+        alert('Email mis à jour avec succès !')
+        setShowEmailSettings(false)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Erreur lors de la mise à jour')
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      alert('Erreur lors de la mise à jour')
+    } finally {
+      setSavingEmail(false)
+    }
+  }
 
   const loadOrders = async () => {
     setLoading(true)
@@ -146,16 +194,53 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-white">Gestion des commandes</h1>
-          <button
-            onClick={async () => {
-              await fetch('/api/admin/logout', { method: 'POST' })
-              router.push('/admin/login')
-            }}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Déconnexion
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowEmailSettings(!showEmailSettings)}
+              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              ⚙️ Paramètres
+            </button>
+            <button
+              onClick={async () => {
+                await fetch('/api/admin/logout', { method: 'POST' })
+                router.push('/admin/login')
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Déconnexion
+            </button>
+          </div>
         </div>
+
+        {/* Section paramètres email */}
+        {showEmailSettings && (
+          <div className="bg-gray-800 rounded-xl p-6 space-y-4">
+            <h2 className="text-xl font-bold text-white">Email de contact</h2>
+            <p className="text-gray-400 text-sm">
+              Cet email sera affiché en bas de la page FAQ pour que les clients puissent vous contacter.
+            </p>
+            <div className="flex gap-3">
+              <input
+                type="email"
+                value={newContactEmail}
+                onChange={(e) => setNewContactEmail(e.target.value)}
+                className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                placeholder="email@example.com"
+              />
+              <button
+                onClick={saveContactEmail}
+                disabled={savingEmail}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {savingEmail ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+            </div>
+            <p className="text-sm text-gray-400">
+              Email actuel: <span className="text-blue-400">{contactEmail}</span>
+            </p>
+          </div>
+        )}
 
         {/* Filtres */}
         <div className="flex gap-3">

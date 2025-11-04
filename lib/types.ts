@@ -27,6 +27,7 @@ export interface CardCustomization {
   photo: string
   username: string
   name: string
+  sport: string
   rating: number
   flagUrl?: string
   removeBackground: boolean

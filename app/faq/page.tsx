@@ -1,8 +1,23 @@
 'use client'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import SmoothReveal from '@/components/SmoothReveal'
 
 export default function FAQ() {
+  const [contactEmail, setContactEmail] = useState('fightercard@example.com')
+
+  useEffect(() => {
+    // Charger l'email de contact depuis l'API
+    fetch('/api/settings/contact-email')
+      .then(res => res.json())
+      .then(data => {
+        if (data.email) {
+          setContactEmail(data.email)
+        }
+      })
+      .catch(err => console.error('Erreur chargement email:', err))
+  }, [])
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Header */}
@@ -93,7 +108,7 @@ export default function FAQ() {
                   </div>
                   <h2 className="text-2xl font-bold mb-4">Recevez en HD</h2>
                   <p className="text-gray-400 leading-relaxed">
-                    Payez 15€ et recevez votre carte en haute définition (2480×3508px, 300 DPI) par email
+                    Payez 15€ et téléchargez instantanément votre carte HD (2480×3508px, 300 DPI) + recevez-la imprimée chez vous
                   </p>
                 </div>
               </div>
@@ -203,12 +218,16 @@ export default function FAQ() {
                   <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Quel est le délai de livraison ?
+                  Quand vais-je recevoir ma carte ?
                 </h3>
-                <p className="text-gray-300">
-                  Votre carte HD (2480×3508px, 300 DPI) vous sera envoyée par email dans les <strong className="text-blue-400">24-48 heures</strong> suivant votre commande.
-                  Le traitement professionnel du fond transparent nécessite un contrôle qualité manuel.
-                </p>
+                <div className="text-gray-300 space-y-3">
+                  <p>
+                    <strong className="text-blue-400">Téléchargement numérique :</strong> Votre carte HD (2480×3508px, 300 DPI) est disponible <strong className="text-white">immédiatement après le paiement</strong> sur la page de confirmation.
+                  </p>
+                  <p>
+                    <strong className="text-blue-400">Carte physique imprimée :</strong> Votre carte sera imprimée en haute qualité et expédiée à l&apos;adresse de livraison fournie lors du paiement. Délai : <strong className="text-white">5 à 10 jours ouvrés</strong>.
+                  </p>
+                </div>
               </div>
 
               {/* Question 3 - Format */}
@@ -217,12 +236,17 @@ export default function FAQ() {
                   <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  Quel format de fichier vais-je recevoir ?
+                  Que vais-je recevoir exactement ?
                 </h3>
-                <p className="text-gray-300">
-                  Vous recevrez un fichier <strong className="text-blue-400">PNG haute définition</strong> de 2480×3508 pixels à 300 DPI,
-                  parfait pour l&apos;impression au format A4 ou pour une utilisation numérique (réseaux sociaux, site web, etc.).
-                </p>
+                <div className="text-gray-300 space-y-2">
+                  <p>
+                    <strong className="text-blue-400">Version numérique :</strong> Un fichier PNG haute définition de 2480×3508 pixels à 300 DPI,
+                    parfait pour l&apos;impression ou une utilisation numérique (réseaux sociaux, site web, merchandising, etc.).
+                  </p>
+                  <p>
+                    <strong className="text-blue-400">Carte physique :</strong> Une carte imprimée en haute qualité au format A4, livrée à votre adresse.
+                  </p>
+                </div>
               </div>
 
               {/* Question 4 - Modification */}
@@ -264,6 +288,29 @@ export default function FAQ() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
+            </div>
+          </SmoothReveal>
+
+          {/* Contact Section */}
+          <SmoothReveal direction="up" delay={0.6}>
+            <div className="mt-16 text-center">
+              <div className="premium-card p-8 max-w-2xl mx-auto">
+                <h3 className="text-2xl font-bold mb-4">
+                  Besoin d&apos;aide ?
+                </h3>
+                <p className="text-gray-300 mb-4">
+                  Notre équipe est là pour vous aider. Contactez-nous pour toute question ou demande personnalisée.
+                </p>
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors text-lg font-semibold"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  {contactEmail}
+                </a>
+              </div>
             </div>
           </SmoothReveal>
         </div>

@@ -114,6 +114,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
     photo: '',
     username: 'fighter_name',
     name: 'FIGHTER',
+    sport: 'MMA',
     rating: 85,
     flagUrl: '',
     removeBackground: false,
@@ -316,7 +317,8 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
 
       
 
-      // MMA label avec ombre
+      // Sport label avec ombre
+      const sportText = customization.sport || 'MMA'
       const { x: sX, y: sY, fontSize: sFS } = template.positions.sport
       ctx.fillStyle = 'white'
       ctx.font = `700 ${sFS * scale}px "Inter Tight", sans-serif`
@@ -324,7 +326,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       ctx.textBaseline = 'top'
       ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'
       ctx.shadowBlur = 12 * scale
-      ctx.fillText('MMA', sX * scale, sY * scale)
+      ctx.fillText(sportText, sX * scale, sY * scale)
       ctx.shadowBlur = 0
 
       // Drapeau
@@ -564,6 +566,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
           )}
         </div>
         <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Nom du combattant</label><input type="text" value={customization.name} onChange={(e) => setCustomization(prev => ({ ...prev, name: e.target.value.toUpperCase() }))} className="input-modern w-full" placeholder='Ex: FIGHTER'/><p className="text-xs text-gray-300">Le nom sera automatiquement en majuscules</p></div>
+        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Sport / Discipline</label><input type="text" value={customization.sport} onChange={(e) => setCustomization(prev => ({ ...prev, sport: e.target.value.toUpperCase() }))} className="input-modern w-full" placeholder='Ex: MMA, BOXE, KICKBOXING'/><p className="text-xs text-gray-300">Le texte sera automatiquement en majuscules</p></div>
         <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Note globale</label><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-gray-400">OVERALL RATING</span><span className="text-sm font-bold text-blue-500">{customization.rating}</span></div><div className="relative pt-1"><input type="range" min="0" max="100" value={customization.rating} onChange={(e) => setCustomization(prev => ({ ...prev, rating: parseInt(e.target.value) || 0 }))} style={{ background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.rating}%, rgba(255, 255, 255, 0.1) ${customization.rating}%, rgba(255, 255, 255, 0.1) 100%)` }} className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"/></div></div>
         <div className="space-y-3">
           <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Drapeau (optionnel)</label>
@@ -625,7 +628,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
           )
         })}</div></div>
 
-        <div className="space-y-3 pt-4"><button onClick={() => handleExportCard()} disabled={isProcessing || !customization.photo} className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? (<span className="flex items-center justify-center gap-3"><div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>Génération en cours...</span>) : ( <span className="flex items-center justify-center gap-2"><Download size={20} />Passer commande</span> )}</button><button onClick={() => { setCustomization({ templateId: template.id, photo: '', username: '', name: '', rating: 85, flagUrl: '', removeBackground: false, stats: { force: 90, rapidite: 85, grappling: 88, endurance: 80, striking: 82, equilibre: 87 } }); setSelectedCountryCode(''); }} className="btn-outline w-full"><span className="flex items-center justify-center gap-2"><Trash2 size={18} />Réinitialiser</span></button></div>
+        <div className="space-y-3 pt-4"><button onClick={() => handleExportCard()} disabled={isProcessing || !customization.photo} className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? (<span className="flex items-center justify-center gap-3"><div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>Génération en cours...</span>) : ( <span className="flex items-center justify-center gap-2"><Download size={20} />Passer commande</span> )}</button><button onClick={() => { setCustomization({ templateId: template.id, photo: '', username: '', name: '', sport: 'MMA', rating: 85, flagUrl: '', removeBackground: false, stats: { force: 90, rapidite: 85, grappling: 88, endurance: 80, striking: 82, equilibre: 87 } }); setSelectedCountryCode(''); }} className="btn-outline w-full"><span className="flex items-center justify-center gap-2"><Trash2 size={18} />Réinitialiser</span></button></div>
       </div>
       {/* Aperçu de la carte - sticky à partir de l'étape 2 */}
       <div className="flex flex-col items-center justify-start lg:sticky lg:top-6 lg:self-start lg:order-2">
@@ -664,7 +667,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
               />)}
               {customization.photo && (<div style={{ position: 'absolute', zIndex: 10, left: `${template.positions.photo.x}px`, top: `${template.positions.photo.y}px`, width: `${template.positions.photo.width}px`, height: `${template.positions.photo.height}px` }}><img src={customization.photo} alt="Fighter" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}/></div>)}
               <div className="absolute z-20 text-center" style={{ left: `${template.positions.rating.x}px`, top: `${template.positions.rating.y}px`, width: '70px' }}><div className="font-black text-white" style={{ fontSize: `${template.positions.rating.fontSize}px`, fontFamily: 'var(--font-inter-tight), sans-serif', textShadow: `0 0 25px ${hexToRgba(templateColor, 0.9)}, 0 4px 12px rgba(0,0,0,0.9)`, lineHeight: '1' }}>{customization.rating}</div></div>
-              <div className="absolute z-20 text-white font-bold" style={{ left: `${template.positions.sport.x}px`, top: `${template.positions.sport.y}px`, fontSize: `${template.positions.sport.fontSize}px`, fontFamily: 'var(--font-inter-tight), sans-serif', textShadow: '0 4px 12px rgba(0,0,0,0.8)' }}>MMA</div>
+              <div className="absolute z-20 text-white font-bold" style={{ left: `${template.positions.sport.x}px`, top: `${template.positions.sport.y}px`, fontSize: `${template.positions.sport.fontSize}px`, fontFamily: 'var(--font-inter-tight), sans-serif', textShadow: '0 4px 12px rgba(0,0,0,0.8)' }}>{customization.sport || 'MMA'}</div>
               {customization.flagUrl && (<img src={customization.flagUrl} alt="Flag" className="absolute z-20 rounded shadow-lg" style={{ left: `${template.positions.flag.x}px`, top: `${template.positions.flag.y}px`, width: `${template.positions.flag.width}px`, height: `${template.positions.flag.height}px`, objectFit: 'cover', boxShadow: '0 4px 10px rgba(0,0,0,0.4)' }}/>)}
 
               {/* FOND DÉGRADÉ POUR LE BAS DE LA CARTE */}
