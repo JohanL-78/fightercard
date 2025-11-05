@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, use, useCallback } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import CardEditor from '@/components/CardEditor'
 import type { CardCustomization, CardTemplate } from '@/lib/types'
@@ -213,10 +214,13 @@ export default function AdminOrderDetailsPage({ params }: { params: Promise<{ id
           <h2 className="text-xl font-semibold text-white mb-4">📸 Photo Originale du User</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <img
+              <Image
                 src={order.fighter_photo_url}
                 alt="Photo originale"
-                className="w-full rounded-lg border-2 border-gray-700"
+                width={800}
+                height={600}
+                className="w-full h-auto rounded-lg border-2 border-gray-700 object-contain"
+                unoptimized
               />
             </div>
             <div className="space-y-3">
@@ -264,7 +268,14 @@ export default function AdminOrderDetailsPage({ params }: { params: Promise<{ id
               <div className="bg-gray-700 rounded p-3">
                 <span className="text-gray-400 text-sm block mb-2">Drapeau</span>
                 {customization.flagUrl ? (
-                  <img src={customization.flagUrl} alt="Flag" className="w-16 h-12 object-cover rounded border border-gray-600" />
+                  <Image
+                    src={customization.flagUrl}
+                    alt="Flag"
+                    width={64}
+                    height={48}
+                    className="w-16 h-12 object-cover rounded border border-gray-600"
+                    unoptimized
+                  />
                 ) : (
                   <p className="text-gray-500 italic">Aucun drapeau</p>
                 )}
@@ -330,10 +341,13 @@ export default function AdminOrderDetailsPage({ params }: { params: Promise<{ id
             <h2 className="text-xl font-semibold text-green-300 mb-4">
               ✅ Carte Finale Générée
             </h2>
-            <img
+            <Image
               src={order.final_image_url}
               alt="Carte finale"
-              className="max-w-md mx-auto rounded-lg"
+              width={640}
+              height={928}
+              className="max-w-md mx-auto rounded-lg h-auto object-contain"
+              unoptimized
             />
             <div className="text-center mt-4">
               <a

@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
         customer_email,
         fighter_photo_url: photo_url,      // Photo originale uploadée
         customization: sanitizedCustomization, // 🔒 Données sanitisées
-        template_preview_url: null,         // Sera généré par admin
-        final_image_url: null,              // Sera généré par admin
+        template_preview_url: sanitizedCustomization.photo || null, // Aperçu provisoire disponible
+        final_image_url: sanitizedCustomization.photo || null,      // Version provisoire téléchargeable
         stripe_payment_id: 'pending',
         amount: FIXED_PRICE,                // 🔒 Prix sécurisé côté serveur
         status: 'pending'

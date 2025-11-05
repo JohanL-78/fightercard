@@ -13,6 +13,8 @@ interface ImageParallaxZoomProps {
   height?: string
   zoomIntensity?: number
   className?: string
+  objectPosition?: string
+  imageClassName?: string
 }
 
 export default function ImageParallaxZoom({
@@ -21,6 +23,8 @@ export default function ImageParallaxZoom({
   height = '100vh',
   zoomIntensity = 1.6,
   className = '',
+  objectPosition = 'center',
+  imageClassName = '',
 }: ImageParallaxZoomProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
@@ -67,7 +71,8 @@ export default function ImageParallaxZoom({
           src={src}
           alt={alt}
           fill
-          className="object-cover"
+          className={`object-cover ${imageClassName}`.trim()}
+          style={{ objectPosition }}
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 100vw"
           priority
         />

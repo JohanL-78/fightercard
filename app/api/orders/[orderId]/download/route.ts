@@ -94,6 +94,7 @@ export async function GET(
     })
 
   } catch (error) {
+    console.error('Download link error:', error)
     downloadLogger.logDownloadError(orderId, 'server-error')
     return NextResponse.json(
       { error: 'Erreur serveur lors de la génération du lien' },

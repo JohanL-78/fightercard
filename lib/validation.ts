@@ -94,7 +94,7 @@ export function validateBase64Image(base64String: string): {
     }
 
     return { valid: true }
-  } catch (error) {
+  } catch (_error) {
     return { valid: false, error: 'Impossible de décoder l\'image base64' }
   }
 }
@@ -146,7 +146,7 @@ export async function validateFileBuffer(file: File): Promise<{
     }
 
     return { valid: true }
-  } catch (error) {
+  } catch (_error) {
     return { valid: false, error: 'Impossible de lire le fichier' }
   }
 }

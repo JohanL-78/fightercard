@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Download, CheckCircle, Clock, Package } from 'lucide-react'
 import type { Order, CardCustomization } from '@/lib/types'
@@ -295,10 +296,12 @@ export default function AdminPage() {
                   {/* Aperçu de la carte */}
                   {order.finalImageUrl && (
                     <div className="relative w-full h-48 bg-gray-700 rounded-lg overflow-hidden">
-                      <img
+                      <Image
                         src={order.finalImageUrl}
                         alt="Aperçu"
-                        className="w-full h-full object-contain"
+                        fill
+                        className="object-contain"
+                        unoptimized
                       />
                     </div>
                   )}

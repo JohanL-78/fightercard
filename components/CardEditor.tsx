@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
+import NextImage from 'next/image'
 import { Upload, Download, Trash2, Dumbbell, Zap, Users, Heart, Crosshair, Scale } from 'lucide-react'
 import type { CardCustomization, CardTemplate } from '@/lib/types'
 import { sanitizeFighterName, sanitizeSport, sanitizeCountryCode, sanitizeRating } from '@/lib/sanitize'
@@ -72,6 +73,16 @@ const COUNTRIES = [
   { code: 'hr', name: 'Croatie', flag: '🇭🇷' },
   { code: 'rs', name: 'Serbie', flag: '🇷🇸' },
 ].sort((a, b) => a.name.localeCompare(b.name))
+
+// Liste des polices disponibles pour TOUS les textes de la carte
+// UNIQUEMENT des polices système qui fonctionnent dans le canvas HTML5
+const FIGHTER_FONTS = [
+  { name: 'Impact (Bold)', value: 'Impact, "Arial Black", sans-serif' },
+  { name: 'Arial Black', value: '"Arial Black", "Arial Bold", sans-serif' },
+  { name: 'Helvetica Bold', value: '"Helvetica Neue", Helvetica, Arial, sans-serif' },
+  { name: 'Georgia Bold', value: 'Georgia, "Times New Roman", serif' },
+]
+
 const POLYGON_CLIP_PATH = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)'
 const BACKGROUND_VERTICAL_SHIFT_RATIO = 0.05 // proportion de la hauteur à remonter (0.05 = 5 %)
 
@@ -138,6 +149,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
     extractCountryCode(initialCustomization?.flagUrl || '')
   )
   const [isProcessing, setIsProcessing] = useState(false)
+  const [selectedFont, setSelectedFont] = useState<string>('Impact, "Arial Black", sans-serif')
 
   // Mettre à jour le templateId quand le template change (côté client uniquement)
   useEffect(() => {
@@ -306,7 +318,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
 
       // Texte OVR rating avec ombre forte
       ctx.fillStyle = 'white'
-      ctx.font = `900 ${rFS * scale}px "Inter Tight", sans-serif`
+      ctx.font = `900 ${rFS * scale}px ${selectedFont}`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'top'
       ctx.shadowColor = hexToRgba(templateColor, 0.9)
@@ -320,7 +332,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       const sportText = sanitizeSport(customization.sport || 'MMA')
       const { x: sX, y: sY, fontSize: sFS } = template.positions.sport
       ctx.fillStyle = 'white'
-      ctx.font = `700 ${sFS * scale}px "Inter Tight", sans-serif`
+      ctx.font = `700 ${sFS * scale}px ${selectedFont}`
       ctx.textAlign = 'left'
       ctx.textBaseline = 'top'
       ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'
@@ -354,7 +366,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       const nameText = sanitizeFighterName(customization.name || 'FIGHTER')
       const { x: nameX, y: nameY, fontSize: nameFontSize } = template.positions.name
 
-      ctx.font = `900 ${nameFontSize * scale}px "Inter Tight", sans-serif`
+      ctx.font = `900 ${nameFontSize * scale}px ${selectedFont}`
       ctx.letterSpacing = `${3 * scale}px`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
@@ -417,14 +429,14 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
         if (isCol1) {
           // Colonne gauche : libellé vers l'extérieur, valeur tirée vers le centre
           ctx.fillStyle = 'rgba(255, 255, 255, 0.88)'
-          ctx.font = `700 ${statsConfig.labelFontSize * scale}px "Inter Tight", sans-serif`
+          ctx.font = `700 ${statsConfig.labelFontSize * scale}px ${selectedFont}`
           ctx.textAlign = 'left'
           ctx.shadowColor = 'rgba(0, 0, 0, 0.35)'
           ctx.shadowBlur = 3 * scale
           ctx.fillText(stat.label, x, y)
 
           ctx.fillStyle = 'white'
-          ctx.font = `900 ${statsConfig.fontSize * scale}px "Inter Tight", sans-serif`
+          ctx.font = `900 ${statsConfig.fontSize * scale}px ${selectedFont}`
           ctx.textAlign = 'right'
           ctx.shadowColor = hexToRgba(templateColor, 0.5)
           ctx.shadowBlur = 6 * scale
@@ -432,14 +444,14 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
         } else {
           // Colonne droite : valeur vers le centre, libellé aligné vers l'extérieur
           ctx.fillStyle = 'white'
-          ctx.font = `900 ${statsConfig.fontSize * scale}px "Inter Tight", sans-serif`
+          ctx.font = `900 ${statsConfig.fontSize * scale}px ${selectedFont}`
           ctx.textAlign = 'left'
           ctx.shadowColor = hexToRgba(templateColor, 0.5)
           ctx.shadowBlur = 6 * scale
           ctx.fillText(value.toString(), x, y)
 
           ctx.fillStyle = 'rgba(255, 255, 255, 0.88)'
-          ctx.font = `700 ${statsConfig.labelFontSize * scale}px "Inter Tight", sans-serif`
+          ctx.font = `700 ${statsConfig.labelFontSize * scale}px ${selectedFont}`
           ctx.textAlign = 'right'
           ctx.shadowColor = 'rgba(0, 0, 0, 0.35)'
           ctx.shadowBlur = 3 * scale
@@ -507,21 +519,21 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto p-6 animate-fade-in">
       {/* Panneau de contrôle */}
       <div className="space-y-6 lg:order-1">
-        <div className="mb-8"><div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 border border-blue-600/30 rounded-full mb-4"><svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg><span className="text-xs font-bold text-blue-500 tracking-wide">Personnalisation</span></div><h2 className="text-3xl font-black tracking-tight">Créez Votre <span className="text-blue-500">Carte</span></h2><p className="text-gray-400 mt-2">Remplissez tous les champs ci-dessous pour personnaliser votre carte</p></div>
-        <div className="bg-blue-600/10 border border-blue-600/30 rounded-xl p-4 mb-6"><div className="flex items-start gap-3"><svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg><div className="text-sm"><p className="font-medium text-white mb-1">Comment ça marche :</p><ul className="text-gray-400 space-y-1 list-disc list-inside"><li>Ajoutez votre photo de combat</li><li>Entrez votre nom et vos statistiques</li><li>Visualisez en temps réel à droite</li><li>Cliquez sur &quot;Passer commande&quot; quand c&apos;est prêt</li></ul></div></div></div>
+        <div className="mb-8"><div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 border border-blue-600/30 rounded-full mb-4"><svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg><span className="text-xs font-bold text-blue-400 tracking-wide">Personnalisation</span></div><h2 className="text-3xl font-black tracking-tight text-white">Crée Ta <span className="text-blue-400">Carte</span></h2><p className="text-gray-400 mt-2">Remplis tous les champs ci-dessous pour personnaliser ta carte</p></div>
+        <div className="bg-blue-600/10 border border-blue-600/30 rounded-xl p-4 mb-6"><div className="flex items-start gap-3"><svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg><div className="text-sm"><p className="font-medium text-white mb-1">Comment ça marche :</p><ul className="text-gray-300 space-y-1 list-disc list-inside"><li>Ajoute ta photo de combat</li><li>Entre ton nom et tes statistiques</li><li>Visualise en temps réel à droite</li><li>Clique sur &quot;Passer commande&quot; quand c&apos;est prêt</li></ul></div></div></div>
         <div className="space-y-3">
           <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Photo du combattant</label>
 
           {/* Message informatif important */}
           <div className="bg-blue-600/10 border border-blue-600/30 rounded-xl p-4">
             <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
               <div className="text-xs text-gray-300 space-y-2">
                 <p className="font-medium text-white">💡 Conseil professionnel :</p>
-                <p>Pour un résultat optimal, utilisez une <span className="text-blue-400 font-semibold">photo sur fond transparent (PNG)</span> de haute qualité.</p>
-                <p className="text-gray-400">L&apos;outil de suppression automatique ci-dessous est un <span className="text-yellow-400 font-medium">aperçu rapide</span>. Votre carte finale sera traitée professionnellement avec un fond parfaitement retiré.</p>
+                <p>Pour un résultat optimal, utilise une <span className="text-blue-400 font-semibold">photo sur fond transparent (PNG)</span> de haute qualité.</p>
+                <p className="text-gray-400">L&apos;outil de suppression automatique ci-dessous est un <span className="text-yellow-400 font-medium">aperçu rapide</span>. Ta carte finale sera traitée professionnellement avec un fond parfaitement retiré.</p>
               </div>
             </div>
           </div>
@@ -529,11 +541,11 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
           <div {...getRootProps()} className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${isDragActive ? 'border-blue-600 bg-blue-600/10 scale-105' : 'border-white/10 hover:border-blue-600/50 bg-[#0f0f0f]'}`}>
             <input {...getInputProps()} />
             <div className={`transition-transform duration-300 ${isDragActive ? 'scale-110' : ''}`}>
-              <Upload className="mx-auto mb-4 text-blue-500" size={48} />
+              <Upload className="mx-auto mb-4 text-blue-400" size={48} />
               <p className="text-white font-medium mb-1">
-                {isDragActive ? 'Déposez la photo ici' : 'Glissez une photo ici'}
+                {isDragActive ? 'Dépose la photo ici' : 'Glisse une photo ici'}
               </p>
-              <p className="text-sm text-gray-300">ou cliquez pour sélectionner</p>
+              <p className="text-sm text-gray-300">ou clique pour sélectionner</p>
             </div>
           </div>
 
@@ -564,9 +576,28 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
             </div>
           )}
         </div>
-        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Nom du combattant</label><input type="text" value={customization.name} onChange={(e) => setCustomization(prev => ({ ...prev, name: sanitizeFighterName(e.target.value) }))} className="input-modern w-full" placeholder='Ex: FIGHTER' maxLength={30}/><p className="text-xs text-gray-300">Le nom sera automatiquement en majuscules (max 30 caractères)</p></div>
+        <div className="space-y-3">
+          <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Nom du combattant</label>
+          <input type="text" value={customization.name} onChange={(e) => setCustomization(prev => ({ ...prev, name: sanitizeFighterName(e.target.value) }))} className="input-modern w-full" placeholder='Ex: FIGHTER' maxLength={30}/>
+          <p className="text-xs text-gray-300">Le nom sera automatiquement en majuscules (max 30 caractères)</p>
+        </div>
+        <div className="space-y-3">
+          <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Police de la carte</label>
+          <select
+            value={selectedFont}
+            onChange={(e) => setSelectedFont(e.target.value)}
+            className="input-modern w-full"
+          >
+            {FIGHTER_FONTS.map(font => (
+              <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                {font.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-300">Change la typographie de tous les textes de ta carte</p>
+        </div>
         <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Sport / Discipline</label><input type="text" value={customization.sport} onChange={(e) => setCustomization(prev => ({ ...prev, sport: sanitizeSport(e.target.value) }))} className="input-modern w-full" placeholder='Ex: MMA, BOXE, KICKBOXING' maxLength={20}/><p className="text-xs text-gray-300">Le texte sera automatiquement en majuscules (max 20 caractères)</p></div>
-        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Note globale</label><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-gray-400">OVERALL RATING</span><span className="text-sm font-bold text-blue-500">{customization.rating}</span></div><div className="relative pt-1"><input type="range" min="0" max="100" value={customization.rating} onChange={(e) => setCustomization(prev => ({ ...prev, rating: sanitizeRating(parseInt(e.target.value)) }))} style={{ background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.rating}%, rgba(255, 255, 255, 0.1) ${customization.rating}%, rgba(255, 255, 255, 0.1) 100%)` }} className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"/></div></div>
+        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Note globale</label><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-gray-400">OVERALL RATING</span><span className="text-sm font-bold text-blue-400">{customization.rating}</span></div><div className="relative pt-1"><input type="range" min="0" max="100" value={customization.rating} onChange={(e) => setCustomization(prev => ({ ...prev, rating: sanitizeRating(parseInt(e.target.value)) }))} style={{ background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.rating}%, rgba(255, 255, 255, 0.1) ${customization.rating}%, rgba(255, 255, 255, 0.1) 100%)` }} className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-600/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"/></div></div>
         <div className="space-y-3">
           <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Drapeau (optionnel)</label>
           <select
@@ -603,7 +634,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
                   <StatIcon className="w-3.5 h-3.5" />
                   {stat.label}
                 </label>
-                <span className="text-sm font-bold text-blue-500">
+                <span className="text-sm font-bold text-blue-400">
                   {customization.stats[stat.key as keyof typeof customization.stats]}
                 </span>
               </div>
@@ -620,7 +651,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
                   style={{
                     background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.stats[stat.key as keyof typeof customization.stats]}%, rgba(255, 255, 255, 0.1) ${customization.stats[stat.key as keyof typeof customization.stats]}%, rgba(255, 255, 255, 0.1) 100%)`
                   }}
-                  className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-600/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"
                 />
               </div>
             </div>
@@ -631,7 +662,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       </div>
       {/* Aperçu de la carte - sticky à partir de l'étape 2 */}
       <div className="flex flex-col items-center justify-start lg:sticky lg:top-6 lg:self-start lg:order-2">
-        <div className="mb-6 text-center"><div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 border border-blue-600/30 rounded-full mb-2"><div className="relative"><div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse"></div><div className="absolute inset-0 h-2 w-2 bg-blue-500 rounded-full animate-ping"></div></div><span className="text-sm font-bold text-blue-500 tracking-wide uppercase">Aperçu en Temps Réel</span></div><p className="text-xs text-gray-300">Vos modifications apparaissent instantanément</p></div>
+        <div className="mb-6 text-center"><div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 border border-blue-600/30 rounded-full mb-2"><div className="relative"><div className="h-2 w-2 bg-blue-400 rounded-full animate-pulse"></div><div className="absolute inset-0 h-2 w-2 bg-blue-400 rounded-full animate-ping"></div></div><span className="text-sm font-bold text-blue-400 tracking-wide uppercase">Aperçu en Temps Réel</span></div><p className="text-xs text-gray-300">Vos modifications apparaissent instantanément</p></div>
         <div className="relative group">
           <div className="absolute -inset-4 bg-blue-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
           {/* Bordure simple épaisse blanche */}
@@ -651,30 +682,73 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
             }}>
               {/* Contenu de la carte */}
               <div ref={cardRef} className="relative w-full h-full overflow-hidden" style={{ backgroundColor: '#1a1a1a', clipPath: POLYGON_CLIP_PATH }}>
-              {(backgroundPreviewBase64 || backgroundImageBase64) && (<img
-                src={backgroundPreviewBase64 || backgroundImageBase64}
-                alt=""
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '360px',
-                  height: '520px',
-                  objectFit: 'cover',
-                  objectPosition: 'top center'
-                }}
-              />)}
-              {customization.photo && (<div style={{ position: 'absolute', zIndex: 10, left: `${template.positions.photo.x}px`, top: `${template.positions.photo.y}px`, width: `${template.positions.photo.width}px`, height: `${template.positions.photo.height}px` }}><img src={customization.photo} alt="Fighter" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}/></div>)}
-              <div className="absolute z-20 text-center" style={{ left: `${template.positions.rating.x}px`, top: `${template.positions.rating.y}px`, width: '70px' }}><div className="font-black text-white" style={{ fontSize: `${template.positions.rating.fontSize}px`, fontFamily: 'var(--font-inter-tight), sans-serif', textShadow: `0 0 25px ${hexToRgba(templateColor, 0.9)}, 0 4px 12px rgba(0,0,0,0.9)`, lineHeight: '1' }}>{customization.rating}</div></div>
-              <div className="absolute z-20 text-white font-bold" style={{ left: `${template.positions.sport.x}px`, top: `${template.positions.sport.y}px`, fontSize: `${template.positions.sport.fontSize}px`, fontFamily: 'var(--font-inter-tight), sans-serif', textShadow: '0 4px 12px rgba(0,0,0,0.8)' }}>{customization.sport || 'MMA'}</div>
-              {customization.flagUrl && (<img src={customization.flagUrl} alt="Flag" className="absolute z-20 rounded shadow-lg" style={{ left: `${template.positions.flag.x}px`, top: `${template.positions.flag.y}px`, width: `${template.positions.flag.width}px`, height: `${template.positions.flag.height}px`, objectFit: 'cover', boxShadow: '0 4px 10px rgba(0,0,0,0.4)' }}/>)}
+              {(backgroundPreviewBase64 || backgroundImageBase64) && (
+                <NextImage
+                  src={backgroundPreviewBase64 || backgroundImageBase64}
+                  alt="Background"
+                  fill
+                  className="object-cover"
+                  style={{ objectPosition: 'top center' }}
+                  unoptimized
+                />
+              )}
+              {customization.photo && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    zIndex: 10,
+                    left: `${template.positions.photo.x}px`,
+                    top: `${template.positions.photo.y}px`,
+                    width: `${template.positions.photo.width}px`,
+                    height: `${template.positions.photo.height}px`,
+                  }}
+                >
+                  <NextImage
+                    src={customization.photo}
+                    alt="Fighter"
+                    fill
+                    className="object-cover"
+                    style={{ objectPosition: 'top center' }}
+                    unoptimized
+                  />
+                </div>
+              )}
+              <div className="absolute z-20 text-center" style={{ left: `${template.positions.rating.x}px`, top: `${template.positions.rating.y}px`, width: '70px' }}><div className="font-black text-white" style={{ fontSize: `${template.positions.rating.fontSize}px`, fontFamily: `${selectedFont}, sans-serif`, textShadow: `0 0 25px ${hexToRgba(templateColor, 0.9)}, 0 4px 12px rgba(0,0,0,0.9)`, lineHeight: '1' }}>{customization.rating}</div></div>
+              <div className="absolute z-20 text-white font-bold" style={{ left: `${template.positions.sport.x}px`, top: `${template.positions.sport.y}px`, fontSize: `${template.positions.sport.fontSize}px`, fontFamily: `${selectedFont}, sans-serif`, textShadow: '0 4px 12px rgba(0,0,0,0.8)' }}>{customization.sport || 'MMA'}</div>
+              {customization.flagUrl && (
+                <div
+                  className="absolute z-20 rounded shadow-lg overflow-hidden"
+                  style={{
+                    left: `${template.positions.flag.x}px`,
+                    top: `${template.positions.flag.y}px`,
+                    width: `${template.positions.flag.width}px`,
+                    height: `${template.positions.flag.height}px`,
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.4)',
+                  }}
+                >
+                  <NextImage
+                    src={customization.flagUrl}
+                    alt="Flag"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              )}
 
               {/* FOND DÉGRADÉ POUR LE BAS DE LA CARTE */}
-              <div className="absolute z-10 w-full" style={{ top: `${template.positions.name.y - 30}px`, bottom: '0px', background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%)', backdropFilter: 'blur(15px)' }}></div>
+              <div
+                className="absolute z-10 w-full"
+                style={{
+                  top: `${template.positions.name.y - 30}px`,
+                  bottom: '0px',
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%)',
+                }}
+              ></div>
 
               {/* NOM DU COMBATTANT - Utilise template.positions.name */}
               <div className="absolute z-20 text-center" style={{ left: `${template.positions.name.x}px`, top: `${template.positions.name.y}px`, transform: 'translate(-50%, -50%)' }}>
-                <div className="font-black text-white tracking-widest" style={{ whiteSpace: 'nowrap', fontSize: `${template.positions.name.fontSize}px`, fontFamily: 'var(--font-inter-tight), sans-serif', textShadow: `0 8px 30px rgba(0,0,0,0.9), 0 0 40px ${hexToRgba(templateColor, 0.8)}`, letterSpacing: '3px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.6))', lineHeight: '1' }}>{customization.name || 'FIGHTER'}</div>
+                <div className="font-black text-white tracking-widest" style={{ whiteSpace: 'nowrap', fontSize: `${template.positions.name.fontSize}px`, fontFamily: `${selectedFont}, sans-serif`, textShadow: `0 8px 30px rgba(0,0,0,0.9), 0 0 40px ${hexToRgba(templateColor, 0.8)}`, letterSpacing: '3px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.6))', lineHeight: '1' }}>{customization.name || 'FIGHTER'}</div>
                 <div className="h-[0.1px] w-40 mx-auto rounded-full mt-2" style={{ background: `linear-gradient(90deg, transparent 0%, ${hexToRgba(templateColor, 0.45)} 50%, transparent 100%)`, boxShadow: `0 0 12px ${hexToRgba(templateColor, 0.5)}` }}></div>
               </div>
 
@@ -724,7 +798,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
                             className="font-semibold text-white uppercase"
                             style={{
                               fontSize: `${template.positions.stats.labelFontSize}px`,
-                              fontFamily: 'var(--font-inter-tight), sans-serif',
+                              fontFamily: `${selectedFont}, sans-serif`,
                               letterSpacing: '1.2px',
                               textShadow: '0 1px 4px rgba(0,0,0,0.4)',
                               lineHeight: '1'
@@ -736,7 +810,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
                             className="font-black text-white"
                             style={{
                               fontSize: `${template.positions.stats.fontSize}px`,
-                              fontFamily: 'var(--font-inter-tight), sans-serif',
+                              fontFamily: `${selectedFont}, sans-serif`,
                               textShadow: `0 0 10px ${hexToRgba(templateColor, 0.45)}`,
                               lineHeight: '1'
                             }}
@@ -750,7 +824,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
                             className="font-black text-white"
                             style={{
                               fontSize: `${template.positions.stats.fontSize}px`,
-                              fontFamily: 'var(--font-inter-tight), sans-serif',
+                              fontFamily: `${selectedFont}, sans-serif`,
                               textShadow: `0 0 10px ${hexToRgba(templateColor, 0.45)}`,
                               lineHeight: '1'
                             }}
@@ -761,7 +835,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
                             className="font-semibold text-white uppercase"
                             style={{
                               fontSize: `${template.positions.stats.labelFontSize}px`,
-                              fontFamily: 'var(--font-inter-tight), sans-serif',
+                              fontFamily: `${selectedFont}, sans-serif`,
                               letterSpacing: '1.2px',
                               textShadow: '0 1px 4px rgba(0,0,0,0.4)',
                               lineHeight: '1'

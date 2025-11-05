@@ -23,7 +23,7 @@ export async function isAuthenticated(request: NextRequest): Promise<boolean> {
     // Vérifier le JWT
     await jwtVerify(token, SECRET_KEY)
     return true
-  } catch (error) {
+  } catch (_error) {
     // Token invalide ou expiré
     return false
   }

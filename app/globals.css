@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --primary-blue: #2563EB;
-  --primary-blue-dark: #1E40AF;
-  --primary-red: #DC2626;
-  --primary-red-dark: #B91C1C;
-  --card-bg: #0f0f0f;
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-hover: rgba(37, 99, 235, 0.3);
+  --background: #1a1a1a;
+  --foreground: #f5f5f5;
+  --primary-blue: #3b82f6;
+  --primary-blue-dark: #2563EB;
+  --primary-red: #ef4444;
+  --primary-red-dark: #DC2626;
+  --card-bg: #252525;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(59, 130, 246, 0.4);
 }
 
 @theme inline {
@@ -23,8 +23,8 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
-  background: #0a0a0a;
-  color: #ededed;
+  background: #1a1a1a;
+  color: #f5f5f5;
   overflow-x: hidden;
 }
 
@@ -288,13 +288,40 @@ body {
   mix-blend-mode: multiply;
 }
 
+/* Headings Impact Boost */
+h1, h2, h3 {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.15;
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.2;
+}
+
+.text-impact {
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-shadow: none;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: #1a1a1a;
 }
 
 ::-webkit-scrollbar-thumb {

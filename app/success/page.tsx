@@ -77,7 +77,8 @@ function SuccessPageContent() {
             ✓ Paiement validé
           </p>
           <p className="text-sm text-gray-400 mt-1">
-            Vous pouvez maintenant télécharger votre carte en haute qualité
+            Téléchargez dès maintenant la version provisoire de votre carte (haute définition).
+            La version finale retouchée vous sera envoyée ensuite.
           </p>
         </div>
 
@@ -97,7 +98,7 @@ function SuccessPageContent() {
               ) : (
                 <>
                   <Download size={24} />
-                  Télécharger ma carte HD
+                  Télécharger la version provisoire
                 </>
               )}
             </button>
@@ -110,14 +111,19 @@ function SuccessPageContent() {
               <p className="text-xs text-gray-400">
                 Si le téléchargement n&apos;a pas démarré, cliquez ci-dessous
               </p>
-              <button
-                onClick={handleDownload}
-                className="w-full bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors text-sm"
-              >
-                Télécharger à nouveau
-              </button>
-            </div>
+            <button
+              onClick={handleDownload}
+              className="w-full bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+            >
+                Télécharger à nouveau la version provisoire
+            </button>
+          </div>
           )}
+
+          <p className="text-xs text-gray-500">
+            Cette version est générée automatiquement. Notre équipe ajustera votre design final
+            avant envoi de la version premium.
+          </p>
 
           {error && (
             <div className="bg-red-900/30 rounded-lg p-4 border border-red-500/30">

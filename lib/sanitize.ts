@@ -75,8 +75,26 @@ export function sanitizeHtml(html: string): string {
  * Sanitise un nom de combattant (converti en majuscules)
  */
 export function sanitizeFighterName(name: string): string {
-  const cleaned = sanitizeText(name, 30) // Max 30 caractères
-  return cleaned.toUpperCase()
+  if (typeof name !== 'string') {
+    return ''
+  }
+
+  const cleaned = name
+    .replace(/[<>\"'`]/g, '')
+    .replace(/\n/g, ' ')
+    .replace(/\r/g, '')
+    .replace(/\t/g, ' ')
+    .replace(/\\/g, '')
+    .replace(/\//g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+=/gi, '')
+
+  // Supprimer les espaces en début tout en conservant les espaces internes/finaux
+  const withoutLeadingSpaces = cleaned.replace(/^\s+/, '')
+  const normalizedSpaces = withoutLeadingSpaces.replace(/\s+/g, ' ')
+  const limited = normalizedSpaces.substring(0, 30)
+
+  return limited.toUpperCase()
 }
 
 /**

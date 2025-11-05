@@ -6,7 +6,7 @@ const SECRET_KEY = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET || 'your-secret-key-change-in-production'
 )
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const cookieStore = await cookies()
     const token = cookieStore.get('admin-auth-token')?.value
@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ authenticated: true })
   } catch (error) {
+    console.error('Admin verify error:', error)
     return NextResponse.json(
       { authenticated: false },
       { status: 401 }

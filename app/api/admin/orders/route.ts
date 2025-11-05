@@ -8,7 +8,7 @@ const SECRET_KEY = new TextEncoder().encode(
 )
 
 // Middleware pour vérifier l'authentification
-async function verifyAuth(request: NextRequest) {
+async function verifyAuth() {
   const cookieStore = await cookies()
   const token = cookieStore.get('admin-auth-token')?.value
 
@@ -27,7 +27,7 @@ async function verifyAuth(request: NextRequest) {
 // GET /api/admin/orders - Récupérer toutes les commandes
 export async function GET(request: NextRequest) {
   // Vérifier l'authentification
-  const authenticated = await verifyAuth(request)
+  const authenticated = await verifyAuth()
   if (!authenticated) {
     return NextResponse.json(
       { error: 'Non autorisé' },
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 // PATCH /api/admin/orders - Mettre à jour le statut d'une commande
 export async function PATCH(request: NextRequest) {
   // Vérifier l'authentification
-  const authenticated = await verifyAuth(request)
+  const authenticated = await verifyAuth()
   if (!authenticated) {
     return NextResponse.json(
       { error: 'Non autorisé' },

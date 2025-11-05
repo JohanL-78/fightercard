@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Legal() {
   return (
@@ -9,7 +10,14 @@ export default function Legal() {
         <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-4 animate-slide-in hover:opacity-80 transition-opacity">
             <div className="relative">
-              <img src="/logoN.avif" alt="MyFightCard Logo" className="h-20 w-20 object-contain" />
+              <Image
+                src="/logoN.avif"
+                alt="MyFightCard Logo"
+                width={80}
+                height={80}
+                className="h-20 w-20 object-contain"
+                priority
+              />
             </div>
             <div>
               <h1 className="text-2xl font-black tracking-tight text-blue-500">
