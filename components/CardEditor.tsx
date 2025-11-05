@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, Download, Trash2, Dumbbell, Zap, Users, Heart, Crosshair, Scale } from 'lucide-react'
 import type { CardCustomization, CardTemplate } from '@/lib/types'
+import { sanitizeFighterName, sanitizeSport, sanitizeCountryCode, sanitizeRating } from '@/lib/sanitize'
 
 // Les types et constantes ne changent pas
 interface CardEditorProps {
@@ -124,7 +125,6 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
   const [customization, setCustomization] = useState<CardCustomization>(
     initialCustomization || defaultCustomization
   )
-  const [originalUserPhoto, setOriginalUserPhoto] = useState<string>('') // Photo originale de l'utilisateur
 
   // Extraire le code pays depuis l'URL du drapeau (si fourni)
   const extractCountryCode = (flagUrl: string): string => {
@@ -214,7 +214,6 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       const reader = new FileReader();
       reader.onload = (e) => {
         const photoData = e.target?.result as string;
-        setOriginalUserPhoto(photoData); // Sauvegarde de la photo originale
         setCustomization(prev => ({ ...prev, photo: photoData, removeBackground: false }))
       };
       reader.readAsDataURL(file);
@@ -318,7 +317,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       
 
       // Sport label avec ombre
-      const sportText = customization.sport || 'MMA'
+      const sportText = sanitizeSport(customization.sport || 'MMA')
       const { x: sX, y: sY, fontSize: sFS } = template.positions.sport
       ctx.fillStyle = 'white'
       ctx.font = `700 ${sFS * scale}px "Inter Tight", sans-serif`
@@ -352,7 +351,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       ctx.fillRect(0, gradientStartY, canvas.width, canvas.height - gradientStartY)
 
       // NOM DU COMBATTANT - Utilise template.positions.name
-      const nameText = customization.name || 'FIGHTER'
+      const nameText = sanitizeFighterName(customization.name || 'FIGHTER')
       const { x: nameX, y: nameY, fontSize: nameFontSize } = template.positions.name
 
       ctx.font = `900 ${nameFontSize * scale}px "Inter Tight", sans-serif`
@@ -565,15 +564,15 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
             </div>
           )}
         </div>
-        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Nom du combattant</label><input type="text" value={customization.name} onChange={(e) => setCustomization(prev => ({ ...prev, name: e.target.value.toUpperCase() }))} className="input-modern w-full" placeholder='Ex: FIGHTER'/><p className="text-xs text-gray-300">Le nom sera automatiquement en majuscules</p></div>
-        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Sport / Discipline</label><input type="text" value={customization.sport} onChange={(e) => setCustomization(prev => ({ ...prev, sport: e.target.value.toUpperCase() }))} className="input-modern w-full" placeholder='Ex: MMA, BOXE, KICKBOXING'/><p className="text-xs text-gray-300">Le texte sera automatiquement en majuscules</p></div>
-        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Note globale</label><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-gray-400">OVERALL RATING</span><span className="text-sm font-bold text-blue-500">{customization.rating}</span></div><div className="relative pt-1"><input type="range" min="0" max="100" value={customization.rating} onChange={(e) => setCustomization(prev => ({ ...prev, rating: parseInt(e.target.value) || 0 }))} style={{ background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.rating}%, rgba(255, 255, 255, 0.1) ${customization.rating}%, rgba(255, 255, 255, 0.1) 100%)` }} className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"/></div></div>
+        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Nom du combattant</label><input type="text" value={customization.name} onChange={(e) => setCustomization(prev => ({ ...prev, name: sanitizeFighterName(e.target.value) }))} className="input-modern w-full" placeholder='Ex: FIGHTER' maxLength={30}/><p className="text-xs text-gray-300">Le nom sera automatiquement en majuscules (max 30 caractères)</p></div>
+        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Sport / Discipline</label><input type="text" value={customization.sport} onChange={(e) => setCustomization(prev => ({ ...prev, sport: sanitizeSport(e.target.value) }))} className="input-modern w-full" placeholder='Ex: MMA, BOXE, KICKBOXING' maxLength={20}/><p className="text-xs text-gray-300">Le texte sera automatiquement en majuscules (max 20 caractères)</p></div>
+        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Note globale</label><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-gray-400">OVERALL RATING</span><span className="text-sm font-bold text-blue-500">{customization.rating}</span></div><div className="relative pt-1"><input type="range" min="0" max="100" value={customization.rating} onChange={(e) => setCustomization(prev => ({ ...prev, rating: sanitizeRating(parseInt(e.target.value)) }))} style={{ background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.rating}%, rgba(255, 255, 255, 0.1) ${customization.rating}%, rgba(255, 255, 255, 0.1) 100%)` }} className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"/></div></div>
         <div className="space-y-3">
           <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Drapeau (optionnel)</label>
           <select
             value={selectedCountryCode}
             onChange={(e) => {
-              const code = e.target.value;
+              const code = sanitizeCountryCode(e.target.value);
               setSelectedCountryCode(code);
               const flagUrl = code ? `https://flagcdn.com/w320/${code}.png` : '';
               setCustomization(prev => ({ ...prev, flagUrl }));
@@ -616,7 +615,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
                   value={customization.stats[stat.key as keyof typeof customization.stats]}
                   onChange={(e) => setCustomization(prev => ({
                     ...prev,
-                    stats: { ...prev.stats, [stat.key]: parseInt(e.target.value) || 0 }
+                    stats: { ...prev.stats, [stat.key]: sanitizeRating(parseInt(e.target.value)) }
                   }))}
                   style={{
                     background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.stats[stat.key as keyof typeof customization.stats]}%, rgba(255, 255, 255, 0.1) ${customization.stats[stat.key as keyof typeof customization.stats]}%, rgba(255, 255, 255, 0.1) 100%)`

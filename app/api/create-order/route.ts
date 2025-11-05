@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getServiceSupabase } from '@/lib/supabase'
+import { sanitizeFighterName, sanitizeSport, sanitizeRating, sanitizeStats, sanitizeUrl } from '@/lib/sanitize'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
@@ -23,6 +24,25 @@ export async function POST(request: NextRequest) {
 
     console.log('Création commande pour:', customer_email)
 
+    // 🔒 SÉCURITÉ: Sanitiser les données de customization avant stockage
+    const sanitizedCustomization = {
+      templateId: customization.templateId || '',
+      photo: sanitizeUrl(customization.photo || ''),
+      username: sanitizeFighterName(customization.username || ''),
+      name: sanitizeFighterName(customization.name || 'FIGHTER'),
+      sport: sanitizeSport(customization.sport || 'MMA'),
+      rating: sanitizeRating(customization.rating || 85),
+      flagUrl: customization.flagUrl ? sanitizeUrl(customization.flagUrl) : '',
+      removeBackground: Boolean(customization.removeBackground),
+      stats: sanitizeStats(customization.stats || {}),
+    }
+
+    console.log('📋 Données sanitisées:', {
+      name: sanitizedCustomization.name,
+      sport: sanitizedCustomization.sport,
+      rating: sanitizedCustomization.rating
+    })
+
     // Créer commande dans Supabase avec photo originale
     const supabase = getServiceSupabase()
 
@@ -31,7 +51,7 @@ export async function POST(request: NextRequest) {
       .insert({
         customer_email,
         fighter_photo_url: photo_url,      // Photo originale uploadée
-        customization,
+        customization: sanitizedCustomization, // 🔒 Données sanitisées
         template_preview_url: null,         // Sera généré par admin
         final_image_url: null,              // Sera généré par admin
         stripe_payment_id: 'pending',

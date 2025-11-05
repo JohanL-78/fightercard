@@ -29,7 +29,11 @@ export default function SplitText({
 
     // Split du texte
     const text = element.textContent || ''
-    element.innerHTML = ''
+
+    // 🔒 SÉCURITÉ: Utiliser removeChild au lieu de innerHTML pour éviter les XSS
+    while (element.firstChild) {
+      element.removeChild(element.firstChild)
+    }
 
     let items: HTMLSpanElement[] = []
 
