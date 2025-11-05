@@ -69,7 +69,7 @@ export default function FAQ() {
           </SmoothReveal>
 
           <SmoothReveal direction="up" delay={0.2}>
-            <div className="grid md:grid-cols-3 gap-8 mb-16 px-4">
+            <div className="grid md:grid-cols-2 gap-8 mb-16 px-4">
               {/* Step 1 */}
               <div className="relative group">
                 <div className="absolute -inset-0.5 bg-blue-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
@@ -80,7 +80,9 @@ export default function FAQ() {
                       <span className="text-3xl sm:text-4xl font-black text-white">1</span>
                     </div>
                   </div>
-                  <h2 className="text-lg sm:text-lg md:text-xl font-bold mb-4 break-words px-2">Choisis un Template</h2>
+                  <h2 className="text-lg sm:text-xl md:text-xl xl:text-2xl font-bold leading-tight mb-4 break-words px-2">
+                    Choisis un Template
+                  </h2>
                   <p className="text-sm sm:text-base text-gray-400 leading-relaxed break-words px-2">
                     Sélectionne parmi nos templates professionnels conçus pour les combattants
                   </p>
@@ -97,7 +99,9 @@ export default function FAQ() {
                       <span className="text-3xl sm:text-4xl font-black text-white">2</span>
                     </div>
                   </div>
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 break-words px-2">Personnalise</h2>
+                  <h2 className="text-lg sm:text-xl md:text-xl xl:text-xl font-bold leading-tight mb-4 break-words px-2">
+                    Personnalise
+                  </h2>
                   <p className="text-sm sm:text-base text-gray-400 leading-relaxed break-words px-2">
                     Ajoute ta photo, nom, statistiques et crée une carte unique à ton image
                   </p>
@@ -114,7 +118,9 @@ export default function FAQ() {
                       <span className="text-3xl sm:text-4xl font-black text-white">3</span>
                     </div>
                   </div>
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 break-words px-2">Télécharge en HD</h2>
+                  <h2 className="text-lg sm:text-xl md:text-xl xl:text-2xl font-bold leading-tight mb-4 break-words px-2">
+                    Télécharge en HD
+                  </h2>
                   <p className="text-sm sm:text-base text-gray-400 leading-relaxed break-words px-2">
                     Paie 15€ et télécharge immédiatement une version provisoire HD (2480×3508px, 300 DPI).
                     Notre équipe retouche ensuite ta carte finale et te l&apos;envoie (ainsi qu&apos;une impression).
@@ -126,7 +132,7 @@ export default function FAQ() {
 
           {/* Features */}
           <SmoothReveal direction="up" delay={0.3}>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
               <div className="flex items-start gap-4 p-6 bg-[#0a0a0a] rounded-xl border border-white/10 hover:border-blue-600/30 transition-colors">
                 <div className="h-12 w-12 bg-blue-600/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,8 +140,8 @@ export default function FAQ() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold mb-1">Upload Photo</h3>
-                  <p className="text-sm text-gray-300">Ajoute ta meilleure photo de combat</p>
+                  <h3 className="text-base lg:text-lg font-bold mb-1">Upload Photo</h3>
+                  <p className="text-sm lg:text-base text-gray-300">Ajoute ta meilleure photo de combat</p>
                 </div>
               </div>
 
@@ -146,8 +152,8 @@ export default function FAQ() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold mb-1">Stats Personnalisées</h3>
-                  <p className="text-sm text-gray-300">Force, rapidité, endurance, etc.</p>
+                  <h3 className="text-base lg:text-lg font-bold mb-1">Stats Personnalisées</h3>
+                  <p className="text-sm lg:text-base text-gray-300">Force, rapidité, endurance, etc.</p>
                 </div>
               </div>
 
@@ -158,8 +164,8 @@ export default function FAQ() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold mb-1">Design Pro</h3>
-                  <p className="text-sm text-gray-300">Templates créés par des designers</p>
+                  <h3 className="text-base lg:text-lg font-bold mb-1">Design Pro</h3>
+                  <p className="text-sm lg:text-base text-gray-300">Templates créés par des designers</p>
                 </div>
               </div>
 
@@ -170,8 +176,8 @@ export default function FAQ() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold mb-1">Qualité HD</h3>
-                  <p className="text-sm text-gray-300">2480×3508px à 300 DPI pour impression A4</p>
+                  <h3 className="text-base lg:text-lg font-bold mb-1">Qualité HD</h3>
+                  <p className="text-sm lg:text-base text-gray-300">2480×3508px à 300 DPI pour impression A4</p>
                 </div>
               </div>
             </div>
