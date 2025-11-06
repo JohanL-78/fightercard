@@ -1,0 +1,37 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hexagone stylisé -->
+  <path d="M100 20 L160 55 L160 125 L100 160 L40 125 L40 55 Z"
+        stroke="currentColor"
+        stroke-width="3"
+        fill="none"
+        opacity="0.15"/>
+
+  <!-- Texte FIGHTER simplifié -->
+  <text x="100" y="85"
+        font-family="Arial, sans-serif"
+        font-size="24"
+        font-weight="900"
+        text-anchor="middle"
+        fill="currentColor"
+        opacity="0.2">FIGHTER</text>
+
+  <!-- Texte CARD simplifié -->
+  <text x="100" y="110"
+        font-family="Arial, sans-serif"
+        font-size="20"
+        font-weight="900"
+        text-anchor="middle"
+        fill="currentColor"
+        opacity="0.2">CARD</text>
+
+  <!-- Gants de boxe stylisés -->
+  <g opacity="0.15">
+    <!-- Gant gauche -->
+    <circle cx="70" cy="140" r="8" fill="currentColor"/>
+    <rect x="66" y="135" width="8" height="15" rx="2" fill="currentColor"/>
+
+    <!-- Gant droit -->
+    <circle cx="130" cy="140" r="8" fill="currentColor"/>
+    <rect x="126" y="135" width="8" height="15" rx="2" fill="currentColor"/>
+  </g>
+</svg>

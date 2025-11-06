@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import NextImage from 'next/image'
-import { Upload, Download, Trash2, Dumbbell, Zap, Users, Heart, Crosshair, Scale } from 'lucide-react'
+import { Upload, Trash2, Dumbbell, Zap, Users, Heart, Crosshair, Scale, ShoppingCart } from 'lucide-react'
 import type { CardCustomization, CardTemplate } from '@/lib/types'
 import { sanitizeFighterName, sanitizeSport, sanitizeCountryCode, sanitizeRating } from '@/lib/sanitize'
+import { useCartStore, type CartItem } from '@/lib/cart-store'
 
 // Les types et constantes ne changent pas
 interface CardEditorProps {
@@ -86,6 +87,16 @@ const FIGHTER_FONTS = [
 const POLYGON_CLIP_PATH = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)'
 const BACKGROUND_VERTICAL_SHIFT_RATIO = 0.05 // proportion de la hauteur à remonter (0.05 = 5 %)
 
+// Configuration du logo en filigrane - SOURCE DE VÉRITÉ UNIQUE
+const WATERMARK_CONFIG = {
+  imagePath: '/logoN-2-2.webp',
+  size: 38, // Taille en pixels (base 360px)
+  offsetX: 0.7, // Décalage horizontal vers la droite (depuis le centre)
+  offsetY: 115, // Décalage vertical sous le nom
+  opacity: 0.99, // Transparence (0-1)
+  grayscale: true, // Noir et blanc
+} as const
+
 const drawBackgroundWithFocus = (
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
@@ -151,6 +162,9 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedFont, setSelectedFont] = useState<string>('Impact, "Arial Black", sans-serif')
 
+  // Hook du panier
+  const addToCart = useCartStore(state => state.addItem)
+
   // Mettre à jour le templateId quand le template change (côté client uniquement)
   useEffect(() => {
     if (!initialCustomization) {
@@ -158,6 +172,13 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       setCustomization(prev => ({ ...prev, templateId: template.id }))
     }
   }, [template.id, initialCustomization])
+
+  // Calculer automatiquement le rating global comme moyenne des stats
+  useEffect(() => {
+    const { force, rapidite, grappling, endurance, striking, equilibre } = customization.stats
+    const average = Math.round((force + rapidite + grappling + endurance + striking + equilibre) / 6)
+    setCustomization(prev => ({ ...prev, rating: average }))
+  }, [customization.stats])
   const [backgroundImageBase64, setBackgroundImageBase64] = useState<string>('')
   const [backgroundPreviewBase64, setBackgroundPreviewBase64] = useState<string>('')
   const [flagImageBase64, setFlagImageBase64] = useState<string>('')
@@ -270,7 +291,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
   }
 
   // --- VERSION FINALE ET CORRIGÉE DE L'EXPORT ---
-  const handleExportCard = async () => {
+  const handleExportCard = async (): Promise<{ imageUrl: string, originalPhoto: string } | null> => {
     setIsProcessing(true)
     try {
       // Scale pour atteindre 300 DPI sur format A4 (210×297mm)
@@ -361,6 +382,30 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       footerGradient.addColorStop(1, 'rgba(0, 0, 0, 0.85)')
       ctx.fillStyle = footerGradient
       ctx.fillRect(0, gradientStartY, canvas.width, canvas.height - gradientStartY)
+
+      // LOGO EN FILIGRANE dans la zone stats
+      try {
+        const logoImg = new Image()
+        logoImg.crossOrigin = 'anonymous'
+        logoImg.src = WATERMARK_CONFIG.imagePath
+        await logoImg.decode()
+
+        // Positionner le logo décalé vers la droite dans la zone stats
+        const logoSize = WATERMARK_CONFIG.size * scale
+        const logoX = (canvas.width - logoSize) / 2 + (WATERMARK_CONFIG.offsetX * scale)
+        const logoY = (template.positions.name.y + WATERMARK_CONFIG.offsetY) * scale
+
+        // Dessiner avec forte transparence et filtre noir et blanc
+        ctx.save()
+        ctx.globalAlpha = WATERMARK_CONFIG.opacity
+        ctx.filter = WATERMARK_CONFIG.grayscale ? 'grayscale(100%)' : 'none'
+        ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize)
+        ctx.globalAlpha = 1
+        ctx.filter = 'none'
+        ctx.restore()
+      } catch (error) {
+        console.log('Logo watermark non chargé:', error)
+      }
 
       // NOM DU COMBATTANT - Utilise template.positions.name
       const nameText = sanitizeFighterName(customization.name || 'FIGHTER')
@@ -507,16 +552,73 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
         size: `${(uploadData.bytes / 1024 / 1024).toFixed(2)} MB`,
       })
 
+      // Préparer les données exportées pour le retour
+      const exportedData = {
+        imageUrl: cloudinaryUrl,
+        originalPhoto: customization.photo
+      }
+
       // Passer la photo CROPPÉE (customization.photo) au lieu de originalUserPhoto
       if (onSave) onSave(cloudinaryUrl, { ...customization, photo: cloudinaryUrl }, customization.photo)
-      else alert('Veuillez finaliser votre commande')
 
-    } catch (error) { console.error('Erreur lors de la génération de la carte:', error); alert('Une erreur est survenue.') }
-    finally { setIsProcessing(false) }
+      return exportedData
+
+    } catch (error) {
+      console.error('Erreur lors de la génération de la carte:', error)
+      alert('Une erreur est survenue.')
+      return null
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Fonction pour ajouter au panier
+  const handleAddToCart = async () => {
+    if (!customization.photo) {
+      alert('Veuillez ajouter une photo avant d\'ajouter au panier')
+      return
+    }
+
+    try {
+      // Générer la carte HD et récupérer directement les données
+      const exportedData = await handleExportCard()
+
+      if (!exportedData) {
+        alert('Erreur lors de la génération de la carte')
+        return
+      }
+
+      // Ajouter au panier
+      addToCart({
+        imageUrl: exportedData.imageUrl,
+        originalPhoto: exportedData.originalPhoto,
+        customization: customization,
+        price: 15.00
+      })
+
+      alert('✅ Carte ajoutée au panier !')
+
+      // Réinitialiser pour créer une nouvelle carte
+      setCustomization({
+        templateId: template.id,
+        photo: '',
+        username: '',
+        name: '',
+        sport: 'MMA',
+        rating: 85,
+        flagUrl: '',
+        removeBackground: false,
+        stats: { force: 90, rapidite: 85, grappling: 88, endurance: 80, striking: 82, equilibre: 87 }
+      })
+      setSelectedCountryCode('')
+    } catch (error) {
+      console.error('Erreur ajout au panier:', error)
+      alert('Erreur lors de l\'ajout au panier')
+    }
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto p-6 animate-fade-in">
+    <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto p-6 animate-fade-in">
       {/* Panneau de contrôle */}
       <div className="space-y-6 lg:order-1">
         <div className="mb-8"><div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 border border-blue-600/30 rounded-full mb-4"><svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg><span className="text-xs font-bold text-blue-400 tracking-wide">Personnalisation</span></div><h2 className="text-3xl font-black tracking-tight text-white">Crée Ta <span className="text-blue-400">Carte</span></h2><p className="text-gray-400 mt-2">Remplis tous les champs ci-dessous pour personnaliser ta carte</p></div>
@@ -597,7 +699,26 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
           <p className="text-xs text-gray-300">Change la typographie de tous les textes de ta carte</p>
         </div>
         <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Sport / Discipline</label><input type="text" value={customization.sport} onChange={(e) => setCustomization(prev => ({ ...prev, sport: sanitizeSport(e.target.value) }))} className="input-modern w-full" placeholder='Ex: MMA, BOXE, KICKBOXING' maxLength={20}/><p className="text-xs text-gray-300">Le texte sera automatiquement en majuscules (max 20 caractères)</p></div>
-        <div className="space-y-3"><label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Note globale</label><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-gray-400">OVERALL RATING</span><span className="text-sm font-bold text-blue-400">{customization.rating}</span></div><div className="relative pt-1"><input type="range" min="0" max="100" value={customization.rating} onChange={(e) => setCustomization(prev => ({ ...prev, rating: sanitizeRating(parseInt(e.target.value)) }))} style={{ background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${customization.rating}%, rgba(255, 255, 255, 0.1) ${customization.rating}%, rgba(255, 255, 255, 0.1) 100%)` }} className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-600/50 [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:hover:bg-blue-400 [&::-moz-range-thumb]:transition-colors [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent"/></div></div>
+        <div className="space-y-3">
+          <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Note globale (Moyenne automatique)</label>
+          <div className="premium-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-gray-400">OVERALL RATING</span>
+              <span className="text-2xl font-black text-blue-400">{customization.rating}</span>
+            </div>
+            <div className="relative pt-1">
+              <div
+                className="w-full h-2 rounded-lg bg-white/10 overflow-hidden"
+              >
+                <div
+                  className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300"
+                  style={{ width: `${customization.rating}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-2 text-center">Calculé automatiquement depuis vos statistiques</p>
+          </div>
+        </div>
         <div className="space-y-3">
           <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">Drapeau (optionnel)</label>
           <select
@@ -658,13 +779,57 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
           )
         })}</div></div>
 
-        <div className="space-y-3 pt-4"><button onClick={() => handleExportCard()} disabled={isProcessing || !customization.photo} className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? (<span className="flex items-center justify-center gap-3"><div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>Génération en cours...</span>) : ( <span className="flex items-center justify-center gap-2"><Download size={20} />Passer commande</span> )}</button><button onClick={() => { setCustomization({ templateId: template.id, photo: '', username: '', name: '', sport: 'MMA', rating: 85, flagUrl: '', removeBackground: false, stats: { force: 90, rapidite: 85, grappling: 88, endurance: 80, striking: 82, equilibre: 87 } }); setSelectedCountryCode(''); }} className="btn-outline w-full"><span className="flex items-center justify-center gap-2"><Trash2 size={18} />Réinitialiser</span></button></div>
+        <div className="space-y-3 pt-4">
+          {/* Bouton Ajouter au panier */}
+          <button
+            onClick={handleAddToCart}
+            disabled={isProcessing || !customization.photo}
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed bg-green-600 hover:bg-green-700"
+            style={{ background: isProcessing || !customization.photo ? undefined : '#16a34a' }}
+          >
+            {isProcessing ? (
+              <span className="flex items-center justify-center gap-3">
+                <div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                Génération en cours...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <ShoppingCart size={20} />
+                Ajouter au panier (15€)
+              </span>
+            )}
+          </button>
+
+          {/* Bouton Réinitialiser */}
+          <button
+            onClick={() => {
+              setCustomization({
+                templateId: template.id,
+                photo: '',
+                username: '',
+                name: '',
+                sport: 'MMA',
+                rating: 85,
+                flagUrl: '',
+                removeBackground: false,
+                stats: { force: 90, rapidite: 85, grappling: 88, endurance: 80, striking: 82, equilibre: 87 }
+              })
+              setSelectedCountryCode('')
+            }}
+            className="btn-outline w-full"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Trash2 size={18} />
+              Réinitialiser
+            </span>
+          </button>
+        </div>
       </div>
       {/* Aperçu de la carte - sticky à partir de l'étape 2 */}
       <div className="flex flex-col items-center justify-start lg:sticky lg:top-6 lg:self-start lg:order-2">
         <div className="mb-6 text-center"><div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 border border-blue-600/30 rounded-full mb-2"><div className="relative"><div className="h-2 w-2 bg-blue-400 rounded-full animate-pulse"></div><div className="absolute inset-0 h-2 w-2 bg-blue-400 rounded-full animate-ping"></div></div><span className="text-sm font-bold text-blue-400 tracking-wide uppercase">Aperçu en Temps Réel</span></div><p className="text-xs text-gray-300">Vos modifications apparaissent instantanément</p></div>
         <div className="relative group">
-          <div className="absolute -inset-4 bg-blue-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+          <div className="hidden lg:block absolute -inset-4 bg-blue-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
           {/* Bordure simple épaisse blanche */}
           <div className="relative" style={{ width: '360px', height: '520px' }}>
             {/* Ombre portée douce */}
@@ -745,6 +910,29 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
                   background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%)',
                 }}
               ></div>
+
+              {/* LOGO EN FILIGRANE dans la zone stats */}
+              <div
+                className="absolute z-15"
+                style={{
+                  left: `calc(50% + ${WATERMARK_CONFIG.offsetX}px)`,
+                  top: `${template.positions.name.y + WATERMARK_CONFIG.offsetY}px`,
+                  transform: 'translate(-50%, 0)',
+                  width: `${WATERMARK_CONFIG.size}px`,
+                  height: `${WATERMARK_CONFIG.size}px`,
+                  opacity: WATERMARK_CONFIG.opacity,
+                  filter: WATERMARK_CONFIG.grayscale ? 'grayscale(100%)' : 'none',
+                  pointerEvents: 'none',
+                }}
+              >
+                <NextImage
+                  src={WATERMARK_CONFIG.imagePath}
+                  alt="Watermark"
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
 
               {/* NOM DU COMBATTANT - Utilise template.positions.name */}
               <div className="absolute z-20 text-center" style={{ left: `${template.positions.name.x}px`, top: `${template.positions.name.y}px`, transform: 'translate(-50%, -50%)' }}>

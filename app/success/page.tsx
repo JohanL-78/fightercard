@@ -7,10 +7,17 @@ import Link from 'next/link'
 
 function SuccessPageContent() {
   const searchParams = useSearchParams()
-  const orderId = searchParams.get('order_id')
+  // Gérer à la fois order_id (singulier) et order_ids (pluriel pour compatibilité)
+  const orderIdsParam = searchParams.get('order_ids')
+  const orderIdParam = searchParams.get('order_id')
+  // Prendre le premier ID si c'est une liste, sinon prendre l'ID unique
+  const orderId = orderIdsParam ? orderIdsParam.split(',')[0] : orderIdParam
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [downloaded, setDownloaded] = useState(false)
+
+  console.log('🔍 Page success - orderIdsParam:', orderIdsParam, 'orderId extrait:', orderId)
 
   const handleDownload = async () => {
     if (!orderId) {
@@ -18,41 +25,65 @@ function SuccessPageContent() {
       return
     }
 
+    console.log('🔍 Début du téléchargement pour order:', orderId)
     setLoading(true)
     setError(null)
 
     try {
-      const response = await fetch(`/api/orders/${orderId}/download`)
+      const url = `/api/orders/${orderId}/download`
+      console.log('📡 Fetch URL:', url)
+
+      const response = await fetch(url)
+      console.log('📥 Response status:', response.status)
+      console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()))
 
       if (!response.ok) {
         // Si c'est une erreur JSON, la parser
         const contentType = response.headers.get('content-type')
+        console.log('❌ Erreur - Content-Type:', contentType)
+
         if (contentType && contentType.includes('application/json')) {
           const data = await response.json()
+          console.log('❌ Erreur JSON:', data)
           throw new Error(data.error || 'Erreur lors de la récupération du lien')
         }
-        throw new Error('Erreur lors du téléchargement')
+        throw new Error(`Erreur HTTP ${response.status}: ${response.statusText}`)
       }
 
       // L'API retourne directement le fichier image
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      console.log('📦 Blob reçu - taille:', blob.size, 'type:', blob.type)
+
+      // Vérifier que le blob est valide
+      if (blob.size === 0) {
+        throw new Error('Fichier vide reçu')
+      }
+
+      const blobUrl = window.URL.createObjectURL(blob)
+      console.log('🔗 Blob URL créée:', blobUrl)
 
       // Démarrer le téléchargement automatiquement
       const link = document.createElement('a')
-      link.href = url
-      link.download = `fight-card-${orderId}.jpg`
+      link.href = blobUrl
+      link.download = `fight-card-${orderId}.png`
+      link.style.display = 'none'
       document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
 
-      // Libérer la mémoire
-      window.URL.revokeObjectURL(url)
+      console.log('👆 Clic sur le lien de téléchargement')
+      link.click()
+
+      // Nettoyer après un délai
+      setTimeout(() => {
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(blobUrl)
+        console.log('🧹 Nettoyage effectué')
+      }, 1000)
 
       setDownloaded(true)
+      console.log('✅ Téléchargement réussi')
 
     } catch (err) {
-      console.error('Erreur:', err)
+      console.error('❌ Erreur téléchargement:', err)
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setLoading(false)

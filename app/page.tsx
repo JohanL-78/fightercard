@@ -3,23 +3,19 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
-import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 import CardEditor from '@/components/CardEditor'
 import SmoothReveal from '@/components/SmoothReveal'
 import CookieBanner from '@/components/CookieBanner'
 import ImageParallaxZoom from '@/components/ImageParallaxZoom'
-import type { CardTemplate, CardCustomization } from '@/lib/types'
+import Cart from '@/components/Cart'
+import CartButton from '@/components/CartButton'
+import type { CardTemplate } from '@/lib/types'
 
 export default function Home() {
   const [templates, setTemplates] = useState<CardTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<CardTemplate | null>(null)
   const [loading, setLoading] = useState(true)
-  const [customerEmail, setCustomerEmail] = useState('')
-  const [isCheckingOut, setIsCheckingOut] = useState(false)
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
-  const [currentCustomization, setCurrentCustomization] = useState<CardCustomization | null>(null)
-  const [savedImageUrl, setSavedImageUrl] = useState<string>('')
-  const [originalUserPhoto, setOriginalUserPhoto] = useState<string>('') // Photo originale de l'utilisateur
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const [bgColor, setBgColor] = useState<string>('#1a1a1a') // Couleur de fond dynamique
 
   useEffect(() => {
@@ -214,67 +210,7 @@ export default function Home() {
     }
   }
 
-  const handleSaveCard = (imageUrl: string, customization: CardCustomization, originalPhoto: string) => {
-    console.log('Carte sauvegardée, passage au checkout')
-    setSavedImageUrl(imageUrl)
-    setCurrentCustomization(customization)
-    setOriginalUserPhoto(originalPhoto) // Sauvegarde de la photo originale de l'utilisateur
-    // Ne pas mettre isCheckingOut à true ici - on attend que l'utilisateur clique
-    setTimeout(() => {
-      setIsCheckingOut(true)
-    }, 100)
-  }
-
-  const handleCheckout = async () => {
-    // originalUserPhoto contient la photo originale non traitée de l'utilisateur
-    if (!customerEmail || !currentCustomization || !originalUserPhoto) {
-      alert('Veuillez remplir tous les champs')
-      return
-    }
-
-    setIsProcessingPayment(true)
-
-    try {
-      console.log('Upload photo originale vers Cloudinary...')
-
-      // Upload photo originale (non traitée)
-      const photoBlob = await fetch(originalUserPhoto).then(res => res.blob())
-      const photoUrl = await uploadToCloudinary(photoBlob, 'original-photos')
-      console.log('Photo originale uploadée:', photoUrl)
-
-      // Créer commande avec photo originale
-      console.log('Création de la commande...')
-      const response = await fetch('/api/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          photo_url: photoUrl,
-          customization: currentCustomization,
-          customer_email: customerEmail,
-        }),
-      })
-
-      console.log('Réponse reçue:', response.status)
-      const data = await response.json()
-      console.log('Data:', data)
-
-      if (data.error) {
-        throw new Error(data.error)
-      }
-
-      if (data.success && data.url) {
-        // Redirection vers Stripe Checkout
-        console.log('Redirection vers Stripe...')
-        window.location.href = data.url
-      } else {
-        throw new Error('Échec création commande ou session Stripe')
-      }
-    } catch (error) {
-      console.error('Error creating order:', error)
-      alert('Erreur lors de la création de la commande: ' + (error as Error).message)
-      setIsProcessingPayment(false)
-    }
-  }
+  // Plus besoin de ces fonctions - tout passe par le panier maintenant
 
   if (loading) {
     return (
@@ -298,32 +234,33 @@ export default function Home() {
     >
       {/* Header */}
       <header className="sticky top-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/10">
-        <div className="w-full px-6 sm:px-10 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4 animate-slide-in">
-            <div className="relative">
+        <div className="w-full px-2 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-4 sm:gap-6">
+          <div className="flex items-center gap-1.5 sm:gap-4 animate-slide-in">
+            <div className="relative flex-shrink-0">
               <Image
                 src="/logoN-2-2.png"
                 alt="MyFightCard Logo"
                 width={80}
                 height={80}
-                className="h-20 w-20 object-contain"
+                className="h-10 w-10 sm:h-16 sm:w-16 lg:h-20 lg:w-20 object-contain"
                 priority
               />
             </div>
-            <div>
-              <h1 className="text-sm md:text-base lg:text-lg font-black tracking-tight text-blue-400">
+            <div className="min-w-0">
+              <h1 className="text-[9px] sm:text-base lg:text-lg font-black tracking-tight text-blue-400 whitespace-nowrap">
                 Fighter Card
               </h1>
-              <p className="text-xs md:text-sm text-gray-300 font-semibold">Cartes de Combat Personnalisées</p>
+              <p className="hidden sm:block text-xs lg:text-sm text-gray-300 font-semibold">Cartes de Combat Personnalisées</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4 flex-shrink-0">
             <a
               href="/faq"
-              className="text-gray-300 hover:text-blue-400 transition-colors font-medium"
+              className="text-xs sm:text-sm text-gray-300 hover:text-blue-400 transition-colors font-medium"
             >
               FAQ
             </a>
+            <CartButton onClick={() => setIsCartOpen(true)} />
           </div>
         </div>
       </header>
@@ -370,19 +307,19 @@ export default function Home() {
 
             <SmoothReveal direction="up" delay={0.6}>
               <div className="flex gap-4 md:gap-6 items-center justify-center flex-wrap">
-                <div className="bg-black/60 px-4 py-3 rounded-xl border border-white/20">
+                <div className="bg-black/80 px-4 py-3 rounded-xl border border-white/20">
                   <div className="text-lg md:text-xl font-black text-white mb-0.5 drop-shadow-lg">
                     QUALITÉ HD
                   </div>
                   <div className="text-xs text-gray-300 font-medium">Impression Pro</div>
                 </div>
-                <div className="bg-black/60 px-4 py-3 rounded-xl border border-white/20">
+                <div className="bg-black/80 px-4 py-3 rounded-xl border border-white/20">
                   <div className="text-lg md:text-xl font-black text-[#ff0000] mb-0.5 drop-shadow-lg">
                     15€
                   </div>
                   <div className="text-xs text-gray-300 font-medium">Prix Unique</div>
                 </div>
-                <div className="bg-black/60 px-4 py-3 rounded-xl border border-white/20">
+                <div className="bg-black/80 px-4 py-3 rounded-xl border border-white/20">
                   <div className="text-lg md:text-xl font-black text-white mb-0.5 drop-shadow-lg">
                     {templates.length}+
                   </div>
@@ -394,11 +331,11 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="pb-12" id="templates">
+      <div className="pb-12 max-w-7xl mx-auto px-6" id="templates">
 
-        {/* Éditeur de carte - APERÇU EN PREMIER */}
-        {selectedTemplate && !isCheckingOut && (
-          <div className="max-w-7xl mx-auto px-6 mb-12">
+        {/* Éditeur de carte ET Templates dans le même conteneur pour le sticky */}
+        {selectedTemplate && (
+          <>
             {/* Step Indicator */}
             <div className="text-center mb-12 animate-fade-in">
               <div className="inline-flex items-center gap-3 px-8 py-4 bg-blue-600/10 border-2 border-blue-600/30 rounded-full mb-6">
@@ -411,13 +348,13 @@ export default function Home() {
                 Ajoute ta photo, ton nom et tes stats pour une carte 100% unique
               </p>
             </div>
-            <CardEditor template={selectedTemplate} onSave={handleSaveCard} />
-          </div>
+            <CardEditor template={selectedTemplate} />
+          </>
         )}
 
         {/* Sélection du template - APRÈS L'APERÇU */}
         {templates.length > 0 && (
-          <div className="max-w-7xl mx-auto px-6 mb-12">
+          <div className="mb-12">
             {/* Step Indicator */}
             <div className="text-center mb-12 animate-fade-in">
               <div className="inline-flex items-center gap-3 px-8 py-4 bg-blue-600/10 border-2 border-blue-600/30 rounded-full mb-6">
@@ -485,136 +422,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-        {/* Formulaire de paiement */}
-        {isCheckingOut && (
-          <div className="max-w-4xl mx-auto px-6 animate-fade-in">
-            <div className="premium-card p-8 space-y-8">
-              <div className="text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 border border-blue-600/30 rounded-full mb-4">
-                  <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-sm font-bold text-blue-400 tracking-wide">Étape finale</span>
-                </div>
-                <h2 className="text-4xl font-black tracking-tight mb-2 text-white">
-                  Finaliser Votre <span className="text-blue-400">Commande</span>
-                </h2>
-                <p className="text-gray-400">Votre carte personnalisée est prête</p>
-              </div>
-
-              <div className="grid lg:grid-cols-2 gap-8">
-                {/* Aperçu de la carte */}
-                <div className="space-y-4">
-                  <div className="relative group">
-                    <div className="absolute -inset-1 bg-blue-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition duration-500"></div>
-                    <div className="relative bg-[#1a1a1a] rounded-2xl p-6 border-2 border-white/10">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <p className="text-sm font-bold text-gray-300 uppercase tracking-wider">Aperçu HD (720x1040px)</p>
-                      </div>
-                      <div className="flex justify-center">
-                        {savedImageUrl ? (
-                          <Image
-                            src={savedImageUrl}
-                            alt="Aperçu"
-                            width={360}
-                            height={520}
-                            className="rounded-xl shadow-2xl object-contain"
-                            unoptimized
-                          />
-                        ) : (
-                          <div
-                            className="rounded-xl shadow-2xl bg-gray-800/60 border border-white/10"
-                            style={{ width: '360px', height: '520px' }}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Formulaire */}
-                <div className="space-y-6">
-                  <div className="space-y-3">
-                    <label className="block text-sm font-bold text-gray-300 uppercase tracking-wider">
-                      Votre Email
-                    </label>
-                    <input
-                      type="email"
-                      value={customerEmail}
-                      onChange={(e) => setCustomerEmail(e.target.value)}
-                      placeholder="votre@email.com"
-                      className="input-modern w-full"
-                      required
-                    />
-                    <p className="text-xs text-gray-400">Nous vous enverrons la carte HD à cette adresse</p>
-                  </div>
-
-                  <div className="gradient-border p-6">
-                    <div className="relative space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-300 font-medium">Carte HD personnalisée</span>
-                        <span className="text-white font-bold">15,00 €</span>
-                      </div>
-                      <div className="border-t border-white/10"></div>
-                      <div className="flex items-center justify-between text-lg">
-                        <span className="font-bold text-white">Total TTC</span>
-                        <span className="text-2xl font-black text-red-600">
-                          15,00 €
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <button
-                      onClick={handleCheckout}
-                      disabled={isProcessingPayment}
-                      className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isProcessingPayment ? (
-                        <span className="flex items-center justify-center gap-3">
-                          <div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                          Redirection vers le paiement...
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                          </svg>
-                          Procéder au paiement
-                        </span>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => setIsCheckingOut(false)}
-                      className="btn-outline w-full"
-                    >
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Retour à l&apos;éditeur
-                      </span>
-                    </button>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-4 bg-blue-600/10 border border-blue-600/30 rounded-xl">
-                    <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                    <div className="text-sm text-gray-300">
-                      <p className="font-medium text-white mb-1">Paiement sécurisé via Stripe</p>
-                      <p className="text-xs text-gray-400">Vos informations sont protégées et cryptées</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Footer */}
@@ -641,6 +448,9 @@ export default function Home() {
 
       {/* Cookie Banner */}
       <CookieBanner />
+
+      {/* Panier */}
+      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </main>
   )
 }

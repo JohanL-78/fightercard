@@ -87,9 +87,11 @@ export async function GET(
     // 5. Retourner l'image avec les bons headers pour le téléchargement
     return new NextResponse(imageBuffer, {
       headers: {
-        'Content-Type': 'image/jpeg',
-        'Content-Disposition': `attachment; filename="fight-card-${orderId}.jpg"`,
-        'Cache-Control': 'no-cache',
+        'Content-Type': 'image/png',
+        'Content-Disposition': `attachment; filename="fight-card-${orderId}.png"`,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       },
     })
 
