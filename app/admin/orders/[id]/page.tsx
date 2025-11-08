@@ -9,22 +9,6 @@ import type { CardCustomization, CardTemplate } from '@/lib/types'
 // Templates hardcodés (même que dans page.tsx)
 const DEFAULT_TEMPLATES: CardTemplate[] = [
   {
-    id: 'ufc',
-    name: 'UFC Style',
-    imageUrl: '/dark.png',
-    category: 'mma',
-    color: '#10B981',
-    positions: {
-      photo: { x: 45, y: 36, width: 280, height: 305 },
-      username: { x: 180, y: 35, fontSize: 16 },
-      rating: { x: 15, y: 75, fontSize: 32 },
-      sport: { x: 33, y: 105, fontSize: 14 },
-      name: { x: 180, y: 350, fontSize: 28 },
-      flag: { x: 33, y: 135, width: 40, height: 30 },
-      stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
-    },
-  },
-  {
     id: 'boxing',
     name: 'Boxing Ring',
     imageUrl: '/octotun.png',
@@ -57,11 +41,91 @@ const DEFAULT_TEMPLATES: CardTemplate[] = [
     },
   },
   {
+    id: 'ufc',
+    name: 'UFC Style',
+    imageUrl: '/dark.png',
+    category: 'mma',
+    color: '#10B981',
+    positions: {
+      photo: { x: 45, y: 36, width: 280, height: 305 },
+      username: { x: 180, y: 35, fontSize: 16 },
+      rating: { x: 15, y: 75, fontSize: 32 },
+      sport: { x: 33, y: 105, fontSize: 14 },
+      name: { x: 180, y: 350, fontSize: 28 },
+      flag: { x: 33, y: 135, width: 40, height: 30 },
+      stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+    },
+  },
+  {
     id: 'laser',
     name: 'Laser Fighter',
     imageUrl: '/3dwhite.png',
     category: 'other',
     color: '#FFFFFF',
+    positions: {
+      photo: { x: 45, y: 36, width: 280, height: 300 },
+      username: { x: 180, y: 35, fontSize: 16 },
+      rating: { x: 15, y: 75, fontSize: 32 },
+      sport: { x: 33, y: 105, fontSize: 14 },
+      name: { x: 180, y: 350, fontSize: 28 },
+      flag: { x: 33, y: 135, width: 40, height: 30 },
+      stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+    },
+  },
+  {
+    id: 'aztek',
+    name: 'Aztek',
+    imageUrl: '/aztek1.jpg',
+    category: 'other',
+    color: '#F59E0B',
+    positions: {
+      photo: { x: 45, y: 36, width: 280, height: 300 },
+      username: { x: 180, y: 35, fontSize: 16 },
+      rating: { x: 15, y: 75, fontSize: 32 },
+      sport: { x: 33, y: 105, fontSize: 14 },
+      name: { x: 180, y: 350, fontSize: 28 },
+      flag: { x: 33, y: 135, width: 40, height: 30 },
+      stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+    },
+  },
+  {
+    id: 'paint',
+    name: 'Paint',
+    imageUrl: '/leonardo1.jpg',
+    category: 'other',
+    color: '#8B5CF6',
+    positions: {
+      photo: { x: 45, y: 36, width: 280, height: 300 },
+      username: { x: 180, y: 35, fontSize: 16 },
+      rating: { x: 15, y: 75, fontSize: 32 },
+      sport: { x: 33, y: 105, fontSize: 14 },
+      name: { x: 180, y: 350, fontSize: 28 },
+      flag: { x: 33, y: 135, width: 40, height: 30 },
+      stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+    },
+  },
+  {
+    id: 'octogone',
+    name: 'Octogone',
+    imageUrl: '/leonardo2.jpg',
+    category: 'mma',
+    color: '#EC4899',
+    positions: {
+      photo: { x: 45, y: 36, width: 280, height: 300 },
+      username: { x: 180, y: 35, fontSize: 16 },
+      rating: { x: 15, y: 75, fontSize: 32 },
+      sport: { x: 33, y: 105, fontSize: 14 },
+      name: { x: 180, y: 350, fontSize: 28 },
+      flag: { x: 33, y: 135, width: 40, height: 30 },
+      stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+    },
+  },
+  {
+    id: 'shaolin',
+    name: 'Shaolin',
+    imageUrl: '/shaolin1.jpg',
+    category: 'other',
+    color: '#DC2626',
     positions: {
       photo: { x: 45, y: 36, width: 280, height: 300 },
       username: { x: 180, y: 35, fontSize: 16 },
@@ -332,6 +396,7 @@ export default function AdminOrderDetailsPage({ params }: { params: Promise<{ id
               ...customization,
               photo: '' // Ne pas pré-remplir la photo, l'admin va uploader la version détourée
             }}
+            isAdminMode={true}
           />
         </div>
 

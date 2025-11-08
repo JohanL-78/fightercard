@@ -13,6 +13,7 @@ interface CardEditorProps {
   template: CardTemplate
   onSave?: (imageUrl: string, customization: CardCustomization, originalPhoto: string) => void
   initialCustomization?: CardCustomization // Données pré-remplies pour l'admin
+  isAdminMode?: boolean // Mode admin : change le bouton et le comportement
 }
 
 // Liste des pays avec codes ISO pour FlagCDN
@@ -128,7 +129,7 @@ const hexToRgba = (hex: string, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export default function CardEditor({ template, onSave, initialCustomization }: CardEditorProps) {
+export default function CardEditor({ template, onSave, initialCustomization, isAdminMode = false }: CardEditorProps) {
   const templateColor = template.color || '#3B82F6' // Couleur par défaut: bleu
 
   // Utiliser initialCustomization si fournie (mode admin), sinon valeurs par défaut (mode client)
@@ -292,8 +293,24 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
 
   // --- VERSION FINALE ET CORRIGÉE DE L'EXPORT ---
   const handleExportCard = async (): Promise<{ imageUrl: string, originalPhoto: string } | null> => {
+    // Validation de la photo AVANT de commencer
+    if (!customization.photo) {
+      alert('Veuillez ajouter une photo avant de générer la carte')
+      return null
+    }
+
     setIsProcessing(true)
     try {
+      // Précharger et valider la photo du combattant AVANT de commencer
+      const fighterImg = new Image()
+      fighterImg.src = customization.photo
+
+      // Attendre explicitement que l'image soit chargée
+      await new Promise((resolve, reject) => {
+        fighterImg.onload = resolve
+        fighterImg.onerror = () => reject(new Error('Erreur de chargement de la photo'))
+      })
+
       // Scale pour atteindre 300 DPI sur format A4 (210×297mm)
       // 2480×3508px = 210mm × 297mm à 300 DPI
       const scale = 6.88
@@ -312,7 +329,7 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
 
       // 2. DESSIN DE TOUT LE CONTENU CLIPPÉ
       ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, canvas.width, canvas.height); // Fond de couleur
-      
+
       // Image de fond
       if (backgroundImageBase64) {
         const img = new Image()
@@ -320,10 +337,10 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
         await img.decode()
         drawBackgroundWithFocus(ctx, img, canvas.width, canvas.height)
       }
-      
-      // Photo du combattant
+
+      // Photo du combattant (utiliser l'image préchargée)
       if (customization.photo) {
-        const img = new Image(); img.src = customization.photo; await img.decode();
+        const img = fighterImg; // Utiliser l'image déjà chargée
         const { x, y, width, height } = template.positions.photo
         const destX = x * scale, destY = y * scale, destW = width * scale, destH = height * scale
         const imgRatio = img.width / img.height, boxRatio = destW / destH
@@ -559,7 +576,8 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
       }
 
       // Passer la photo CROPPÉE (customization.photo) au lieu de originalUserPhoto
-      if (onSave) onSave(cloudinaryUrl, { ...customization, photo: cloudinaryUrl }, customization.photo)
+      // S'assurer que le templateId correspond au template utilisé
+      if (onSave) onSave(cloudinaryUrl, { ...customization, templateId: template.id, photo: cloudinaryUrl }, customization.photo)
 
       return exportedData
 
@@ -572,7 +590,30 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
     }
   }
 
-  // Fonction pour ajouter au panier
+  // Fonction pour générer la carte (mode admin)
+  const handleGenerateCard = async () => {
+    if (!customization.photo) {
+      alert('Veuillez ajouter une photo avant de générer la carte')
+      return
+    }
+
+    try {
+      // Générer la carte HD
+      const exportedData = await handleExportCard()
+
+      if (!exportedData) {
+        alert('Erreur lors de la génération de la carte')
+        return
+      }
+
+      alert('✅ Carte générée avec succès !')
+    } catch (error) {
+      console.error('Erreur génération carte:', error)
+      alert('Erreur lors de la génération de la carte')
+    }
+  }
+
+  // Fonction pour ajouter au panier (mode client)
   const handleAddToCart = async () => {
     if (!customization.photo) {
       alert('Veuillez ajouter une photo avant d\'ajouter au panier')
@@ -780,9 +821,9 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
         })}</div></div>
 
         <div className="space-y-3 pt-4">
-          {/* Bouton Ajouter au panier */}
+          {/* Bouton principal : Générer (admin) ou Ajouter au panier (client) */}
           <button
-            onClick={handleAddToCart}
+            onClick={isAdminMode ? handleGenerateCard : handleAddToCart}
             disabled={isProcessing || !customization.photo}
             className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed bg-green-600 hover:bg-green-700"
             style={{ background: isProcessing || !customization.photo ? undefined : '#16a34a' }}
@@ -791,6 +832,13 @@ export default function CardEditor({ template, onSave, initialCustomization }: C
               <span className="flex items-center justify-center gap-3">
                 <div className="h-5 w-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                 Génération en cours...
+              </span>
+            ) : isAdminMode ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Générer la carte finale
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
