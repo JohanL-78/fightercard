@@ -141,6 +141,74 @@ export default function Home() {
             stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
           },
         },
+        // Template 5 : Aztek
+        {
+          id: 'aztek',
+          name: 'Aztek',
+          imageUrl: '/aztek1.jpg',
+          category: 'other',
+          color: '#F59E0B', // Orange/Ambre
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
+        // Template 6 : Paint
+        {
+          id: 'paint',
+          name: 'Paint',
+          imageUrl: '/leonardo1.jpg',
+          category: 'other',
+          color: '#8B5CF6', // Violet
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
+        // Template 7 : Octogone
+        {
+          id: 'octogone',
+          name: 'Octogone',
+          imageUrl: '/leonardo2.jpg',
+          category: 'mma',
+          color: '#EC4899', // Rose/Pink
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
+        // Template 8 : Shaolin
+        {
+          id: 'shaolin',
+          name: 'Shaolin',
+          imageUrl: '/darktemple.png',
+          category: 'other',
+          color: '#DC2626', // Rouge foncé
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
       ]
       console.log('Templates du code chargés:', defaultTemplates.length)
       setTemplates(defaultTemplates)
@@ -191,6 +259,91 @@ export default function Home() {
           imageUrl: '/dark.png',
           category: 'mma',
           color: '#10B981', // Vert émeraude
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
+        // Template 4 : Laser Fighter
+        {
+          id: 'laser',
+          name: 'Laser Fighter',
+          imageUrl: '/3dwhite.png',
+          category: 'other',
+          color: '#FFFFFF', // Blanc
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
+        // Template 5 : Aztek
+        {
+          id: 'aztek',
+          name: 'Aztek',
+          imageUrl: '/aztek1.jpg',
+          category: 'other',
+          color: '#F59E0B', // Orange/Ambre
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
+        // Template 6 : Paint
+        {
+          id: 'paint',
+          name: 'Paint',
+          imageUrl: '/leonardo1.jpg',
+          category: 'other',
+          color: '#8B5CF6', // Violet
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
+        // Template 7 : Octogone
+        {
+          id: 'octogone',
+          name: 'Octogone',
+          imageUrl: '/leonardo2.jpg',
+          category: 'mma',
+          color: '#EC4899', // Rose/Pink
+          positions: {
+            photo: { x: 45, y: 36, width: 280, height: 300 },
+            username: { x: 180, y: 35, fontSize: 16 },
+            rating: { x: 15, y: 75, fontSize: 32 },
+            sport: { x: 33, y: 105, fontSize: 14 },
+            name: { x: 180, y: 350, fontSize: 28 },
+            flag: { x: 33, y: 135, width: 40, height: 30 },
+            stats: { x: 180, y: 390, fontSize: 18, labelFontSize: 13, rowSpacing: 28, columnWidth: 120 },
+          },
+        },
+        // Template 8 : Shaolin
+        {
+          id: 'shaolin',
+          name: 'Shaolin',
+          imageUrl: '/darktempe.png',
+          category: 'other',
+          color: '#DC2626', // Rouge foncé
           positions: {
             photo: { x: 45, y: 36, width: 280, height: 300 },
             username: { x: 180, y: 35, fontSize: 16 },
@@ -412,9 +565,6 @@ export default function Home() {
                   <div className="relative p-4 bg-[#252525] border-t border-white/10">
                     <p className="text-lg font-black text-white group-hover:text-blue-400 transition-colors">
                       {template.name}
-                    </p>
-                    <p className="text-sm text-gray-400 uppercase tracking-wider mt-1 font-semibold">
-                      {template.category}
                     </p>
                   </div>
                 </button>
